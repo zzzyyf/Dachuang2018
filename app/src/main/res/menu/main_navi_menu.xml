@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navi_main"
+        android:title="主页"
+        android:icon="@mipmap/outline_home_black_48dp"
+        />
+    <item
+        android:id="@+id/navi_table"
+        android:title="课程表"
+        android:icon="@mipmap/outline_view_module_black_48dp"
+        />
+    <item
+        android:id="@+id/navi_plans"
+        android:title="计划"
+        android:icon="@mipmap/outline_event_note_black_48dp"
+        />
+</menu>

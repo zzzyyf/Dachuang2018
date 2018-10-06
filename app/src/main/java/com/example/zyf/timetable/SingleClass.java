@@ -1,8 +1,5 @@
 package com.example.zyf.timetable;
 
-import java.util.Arrays;
-import java.util.Objects;
-
 /**
  * 表示课程表上周几的某一节大课（注意与一门课作区分）
  */
