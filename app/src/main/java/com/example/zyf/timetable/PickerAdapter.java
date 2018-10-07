@@ -13,9 +13,9 @@ import java.util.List;
 public class PickerAdapter extends RecyclerView.Adapter<PickerAdapter.ViewHolder> {
     List<Integer> weekList;
     int startWeek, endWeek;
-    class ViewHolder extends RecyclerView.ViewHolder{
+    public static class ViewHolder extends RecyclerView.ViewHolder{
         TextView weekNum;
-        public ViewHolder(View v){
+        protected  ViewHolder(View v){
             super(v);
             weekNum = v.findViewById(R.id.week_num);
         }
@@ -26,7 +26,7 @@ public class PickerAdapter extends RecyclerView.Adapter<PickerAdapter.ViewHolder
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+    public ViewHolder onCreateViewHolder(@NonNull final ViewGroup viewGroup, int i) {
         View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.picker_item, viewGroup, false);
         return new ViewHolder(v);
     }
