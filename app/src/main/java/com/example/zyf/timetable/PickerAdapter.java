@@ -33,7 +33,9 @@ public class PickerAdapter extends RecyclerView.Adapter<PickerAdapter.ViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
-        viewHolder.weekNum.setText(weekList.get(i).toString());
+        int num = Integer.parseInt(weekList.get(i).toString());
+        viewHolder.weekNum.setText(num+"");
+        if(PickerHelper.weekNum!=null) PickerHelper.checkHighlight(viewHolder.weekNum);
     }
 
     @Override

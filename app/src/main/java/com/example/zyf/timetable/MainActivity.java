@@ -96,7 +96,9 @@ public class MainActivity extends AppCompatActivity implements HandleScroll{
    @Override
     public void scrollToPosition(int position, TextView view) {
         smoothMoveToPosition(picker, position);
-        PickerHelper.changeWeekNumHighlight(view, getResources().getColor(R.color.darkslategrey), getResources().getColor(R.color.darkviolet));
+        PickerHelper.setDefaultColor(getResources().getColor(R.color.darkslategrey));
+        PickerHelper.setHighlightColor(getResources().getColor(R.color.darkviolet));
+        PickerHelper.changeWeekNumHighlight(view);
         selectedWeek = Integer.parseInt(view.getText().toString());
         Toast.makeText(this, "第 "+selectedWeek+" 周", Toast.LENGTH_SHORT).show();
     }
