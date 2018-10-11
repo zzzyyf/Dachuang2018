@@ -3,13 +3,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/add_item"
-        android:icon="@mipmap/add_item"
+        android:id="@+id/add_class"
+        android:icon="@drawable/table_plus"
         android:title="添加课程"
         app:showAsAction="ifRoom"/>
     <item
-        android:id="@+id/set_table_item"
-        android:icon="@mipmap/set_table_item"
-        android:title="学期设置"
+        android:id="@+id/add_plan"
+        android:icon="@drawable/plan_plus"
+        android:title="添加计划"
         app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/add_event"
+        android:icon="@drawable/event_plus"
+        android:title="添加事项"
+        app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/set_table_item"
+        android:icon="@drawable/table_settings"
+        android:title="学期设置"
+        app:showAsAction="always"/>
 </menu>

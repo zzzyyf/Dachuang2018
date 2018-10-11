@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".MainActivity">
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
@@ -12,26 +13,22 @@
         android:elevation="4dp"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        app:layout_constraintTop_toTopOf="parent"
         />
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/picker"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"/>
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/table_view"
+    <FrameLayout
+        android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/picker"
-        app:layout_constraintBottom_toTopOf="@id/bottom_navi"
-        android:layout_margin="2dp"
-        app:layout_constraintHeight_default="spread"
+        android:layout_weight="1"
         />
-    <android.support.design.widget.BottomNavigationView
+
+    <com.ashokvarma.bottomnavigation.BottomNavigationBar
+        android:id="@+id/navi_main"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/bottom_navi"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:menu="@menu/main_navi_menu"/>
-</android.support.constraint.ConstraintLayout>
+        app:bnbMode="mode_fixed"
+        app:bnbBackgroundStyle="background_style_static"
+        app:bnbActiveColor="@color/darkviolet"
+        app:bnbBackgroundColor="#FFFFFF"
+        app:bnbInactiveColor="@color/darkgray"
+        />
+</LinearLayout>
