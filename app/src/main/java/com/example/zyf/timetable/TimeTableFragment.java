@@ -26,12 +26,10 @@ import static com.example.zyf.timetable.DateHelper.*;
  * create an instance of this fragment.
  */
 public class TimeTableFragment extends Fragment implements HandleScroll {
-    // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
@@ -54,7 +52,6 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
      * @param param2 Parameter 2.
      * @return A new instance of fragment TimeTableFragment.
      */
-    // TODO: Rename and change types and number of parameters
     public static TimeTableFragment newInstance(String param1, String param2) {
         TimeTableFragment fragment = new TimeTableFragment();
         Bundle args = new Bundle();
@@ -77,6 +74,8 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.timetable_layout, container, false);
+        //TODO: 创建周数显示器（以及实现自动隐藏空白weekday功能）
+        //TODO：添加recyclerView的空白（数据为空白时显示的）view
 
         //初始化日期选择器
         picker = view.findViewById(R.id.picker);

@@ -1,9 +1,10 @@
 package com.example.zyf.timetable;
 
+import android.app.Activity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-public class AddClassActivity extends AppCompatActivity {
+public class AddClassActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

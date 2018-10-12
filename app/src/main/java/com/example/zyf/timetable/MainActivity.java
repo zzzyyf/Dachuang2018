@@ -7,8 +7,6 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.WindowManager;
-
 import com.ashokvarma.bottomnavigation.BottomNavigationBar;
 import com.ashokvarma.bottomnavigation.BottomNavigationItem;
 import java.util.ArrayList;
@@ -29,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
 
         //初始化Lists
         classList = new ArrayList<>();
-        initClassListTest(classList);
+        initBlankClassList(classList);
         initWeekList();
 
         //初始化各片段
@@ -99,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()){
             case R.id.add_class:
                 //点击添加课程按钮
-
+                startActivity(new Intent());
                 break;
             case R.id.set_table_item:
                 //点击课表设置按钮
@@ -108,11 +106,11 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
-    public void initClassListTest(List<SingleClass> list){
+    public void initBlankClassList(List<SingleClass> list){
         list.clear();
         for(int i = 0;i<50;i++){
             SingleClass initClass = new SingleClass();
-            initClass.setClassName(i+1+"");
+            initClass.setClassName("");
             initClass.setClassPlace("");
             list.add(initClass);
         }
