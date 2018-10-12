@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
 
 import com.ashokvarma.bottomnavigation.BottomNavigationBar;
 import com.ashokvarma.bottomnavigation.BottomNavigationItem;
@@ -32,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
         initWeekList();
 
         //初始化各片段
+
+
         fragments = new Fragment[4];
         //防止旋转屏幕时Fragment重复加载
         if(savedInstanceState == null) {
@@ -39,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
                     .add(R.id.container, TimeTableFragment.newInstance("1", "2"), "Timetable")
                     .commit();
         }
+
 
 
         //初始化BottomNaviBar

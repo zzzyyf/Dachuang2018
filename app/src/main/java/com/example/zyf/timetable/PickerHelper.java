@@ -6,7 +6,7 @@ import android.widget.TextView;
 import org.w3c.dom.Text;
 
 public class PickerHelper {
-    static TextView weekNum;//TODO: 设为静态易造成内存泄漏，用完应释放引用
+    static TextView weekNum;//设为静态易造成内存泄漏，用完应释放引用
     static int num;
     static int defaultColor, highlightColor;
 

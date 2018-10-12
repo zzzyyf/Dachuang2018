@@ -19,6 +19,7 @@ import java.util.List;
 import static com.example.zyf.timetable.DateHelper.*;
 
 
+
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link TimeTableFragment#newInstance} factory method to
@@ -104,9 +105,8 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
         picker.setLayoutManager(linearManager);
         PickerAdapter weekAdapter = new PickerAdapter(weekList);
         PickerAdapterWrapper wrapper = new PickerAdapterWrapper(weekAdapter, this);
-        View headerView = LayoutInflater.from(getContext()).inflate(R.layout.picker_fillin_layout, picker, false);
-        View footerView = LayoutInflater.from(getContext()).inflate(R.layout.picker_fillin_layout, picker, false);
-        //TODO: 适配横竖屏（自定义Header, Footer)
+        View headerView = new PickerFillin(getContext());
+        View footerView = new PickerFillin(getContext());
         wrapper.addHeaderView(headerView);
         wrapper.addFooterView(footerView);
         picker.setAdapter(wrapper);
