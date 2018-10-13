@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()){
             case R.id.add_class:
                 //点击添加课程按钮
-                startActivity(new Intent());
+                startActivity(new Intent(MainActivity.this, AddClassActivity.class));
                 break;
             case R.id.set_table_item:
                 //点击课表设置按钮
