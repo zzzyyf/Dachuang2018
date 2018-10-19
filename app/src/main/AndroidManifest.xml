@@ -23,7 +23,7 @@
         <activity
             android:name=".AddClassActivity"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/Base.Theme.AppCompat.Light.Dialog" />
+            android:theme="@style/FullScreenDialogTheme" />
         <activity android:name=".WeekSelector"
             android:parentActivityName=".AddClassActivity"
             android:theme="@style/Base.Theme.AppCompat.Light.Dialog" />

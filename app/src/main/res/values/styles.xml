@@ -6,4 +6,9 @@
         <item name="android:textColor">@color/darkslategrey</item>
     </style>
 
+    <style name="FullScreenDialogTheme" parent="Base.Theme.AppCompat.Light.Dialog">
+        <!--使窗口全屏-->
+        <item name="android:windowBackground">@android:color/background_light</item>
+    </style>
+
 </resources>

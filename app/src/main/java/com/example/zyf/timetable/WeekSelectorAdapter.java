@@ -10,8 +10,8 @@ import android.widget.TextView;
 import java.util.List;
 
 public class WeekSelectorAdapter extends RecyclerView.Adapter<WeekSelectorAdapter.ViewHolder> {
-    List<Integer> weekList;
-    public WeekSelectorAdapter(List<Integer> list){
+    List<WeekItem> weekList;
+    public WeekSelectorAdapter(List<WeekItem> list){
         weekList = list;
     }
     public class ViewHolder extends RecyclerView.ViewHolder{
@@ -31,7 +31,10 @@ public class WeekSelectorAdapter extends RecyclerView.Adapter<WeekSelectorAdapte
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
-        viewHolder.weekNum.setText(weekList.get(i).toString());
+        viewHolder.weekNum.setText(weekList.get(i).getWeekNum());
+        if(weekList.get(i).getLit()!=0)
+            viewHolder.itemView.setBackgroundColor(0xffe1bee7);
+        else viewHolder.itemView.setBackgroundColor(0x01e1bee7);
     }
 
     @Override

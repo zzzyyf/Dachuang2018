@@ -5,7 +5,7 @@
     <item
         android:id="@+id/add_class"
         android:icon="@drawable/table_plus"
-        android:title="添加课程"
+        android:title="添加一节课"
         app:showAsAction="ifRoom"/>
     <item
         android:id="@+id/add_plan"

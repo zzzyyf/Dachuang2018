@@ -9,7 +9,7 @@ import android.widget.TextView;
 import java.util.List;
 
 public class SingleClassAdapter extends RecyclerView.Adapter<SingleClassAdapter.ViewHolder> {
-    private List<SingleClass> classList;
+    private List<SingleClassItem> classList;
     static class ViewHolder extends RecyclerView.ViewHolder{
         TextView className;
         TextView classPlace;
@@ -19,7 +19,7 @@ public class SingleClassAdapter extends RecyclerView.Adapter<SingleClassAdapter.
             classPlace = v.findViewById(R.id.class_place);
         }
     }
-    public SingleClassAdapter(List<SingleClass> classList){
+    public SingleClassAdapter(List<SingleClassItem> classList){
         this.classList = classList;
     }
 

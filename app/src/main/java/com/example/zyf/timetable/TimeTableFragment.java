@@ -96,7 +96,7 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
         super.onDetach();
     }
 
-    public void initFragment(List<SingleClass> classList){
+    public void initFragment(List<SingleClassItem> classList){
         //获取数据
         initWeekList();
         //初始化picker

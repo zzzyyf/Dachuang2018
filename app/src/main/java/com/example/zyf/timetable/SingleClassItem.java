@@ -1,9 +1,11 @@
 package com.example.zyf.timetable;
 
+import java.util.ArrayList;
+
 /**
  * 表示课程表上周几的某一节大课（注意与一门课作区分）
  */
-public class SingleClass {
+public class SingleClassItem {
 
     /**
      * 课程名
@@ -16,7 +18,7 @@ public class SingleClass {
     /**
      * 上本节课的各周次
      */
-    private int[] weeks;
+    private ArrayList<Integer> weeks;
     /**
      * 上本节课的各周次
      */
@@ -24,10 +26,10 @@ public class SingleClass {
     /**
      * 单节课的节数
      */
-    private int[] periods;
+    private ArrayList<Integer> periods;
 
 
-    public SingleClass(){
+    public SingleClassItem(){
 
     }
 
@@ -44,11 +46,11 @@ public class SingleClass {
         this.classPlace = classPlace;
     }
 
-    public int[] getWeeks() {
-        return weeks;
-    }
-    public void setWeeks(int[] weeks) {
+    public void setWeeks(ArrayList<Integer> weeks) {
         this.weeks = weeks;
+    }
+    public void setPeriods(ArrayList<Integer> periods) {
+        this.periods = periods;
     }
 
     public int getWeekday() {
@@ -58,11 +60,5 @@ public class SingleClass {
         this.weekday = weekday;
     }
 
-    public int[] getPeriods() {
-        return periods;
-    }
-    public void setPeriods(int[] periods) {
-        this.periods = periods;
-    }
 
 }

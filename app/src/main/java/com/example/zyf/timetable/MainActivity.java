@@ -14,7 +14,7 @@ import java.util.List;
 import static com.example.zyf.timetable.DateHelper.*;
 
 public class MainActivity extends AppCompatActivity {
-    List<SingleClass> classList;
+    List<SingleClassItem> classList;
     Fragment[] fragments;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,10 +106,10 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
-    public void initBlankClassList(List<SingleClass> list){
+    public void initBlankClassList(List<SingleClassItem> list){
         list.clear();
         for(int i = 0;i<50;i++){
-            SingleClass initClass = new SingleClass();
+            SingleClassItem initClass = new SingleClassItem();
             initClass.setClassName("");
             initClass.setClassPlace("");
             list.add(initClass);
