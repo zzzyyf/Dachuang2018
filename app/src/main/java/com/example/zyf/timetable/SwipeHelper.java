@@ -85,7 +85,7 @@ public class SwipeHelper implements View.OnTouchListener {
                                         .start();//点亮该区域
                                 lit.set(i, true);//标示该周被选中
                                 isSelected=i;
-                                Log.i("Dim", "lit: "+(i+1));
+
                                 dimOthers(i);
                                 inTouchArea = true;//设置已进入区域
                             }
@@ -112,7 +112,6 @@ public class SwipeHelper implements View.OnTouchListener {
                 ObjectAnimator dimAnim = ObjectAnimator.ofArgb(manager.findViewByPosition(i), "backgroundColor", 0xffe1bee7, 0x01e1bee7);
                 dimAnim.setDuration(200)
                         .start();//熄灭该区域
-                Log.i("Dim", "dim: "+(i+1));
                 lit.set(i, false);//标示该周被取消选中
             }
     }
