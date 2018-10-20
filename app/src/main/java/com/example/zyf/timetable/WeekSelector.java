@@ -89,7 +89,7 @@ public class WeekSelector extends AppCompatActivity {
         for (int i=0;i<DateHelper.endWeek;i++){
             WeekItem item = new WeekItem();
             item.setWeekNum((i+1)+"");
-            item.setLit(litList.get(i));
+            item.setLit((litList.get(i))==1);
             weekItems.add(item);
         }
         return weekItems;
@@ -106,7 +106,10 @@ public class WeekSelector extends AppCompatActivity {
     }
 
     private void transportLitList(SwipeHelper helper, @NonNull ArrayList<Integer> litList){
-        List<Boolean> helperList = helper.getLit();
+        List<Boolean> helperList = new ArrayList<>();
+        for (int i=0;i<helper.getLit().size();i++){
+            helperList.add(helper.getLit().get(i).isLit());
+        }
         for (int i=0;i<helperList.size();i++){
             if (litList.get(i)==0) {
                 //若原来为0则可能要改为1

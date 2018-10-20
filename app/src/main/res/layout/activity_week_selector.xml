@@ -36,16 +36,17 @@
         android:layout_height="52dp">
         <Button
             android:id="@+id/finish_btn"
-            android:background="#ffffff"
+            android:background="#00ffffff"
             android:layout_margin="8dp"
             android:layout_marginStart="4dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+
             android:text="完成"
             app:layout_constraintEnd_toStartOf="@id/discard_btn"/>
         <Button
             android:id="@+id/discard_btn"
-            android:background="#ffffff"
+            android:background="#00ffffff"
             android:layout_margin="8dp"
             android:layout_marginEnd="4dp"
             android:layout_width="wrap_content"

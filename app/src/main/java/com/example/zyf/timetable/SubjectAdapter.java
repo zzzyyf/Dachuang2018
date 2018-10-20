@@ -6,10 +6,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.example.zyf.timetable.db.Subject;
+
 import java.util.List;
 
-public class SingleClassAdapter extends RecyclerView.Adapter<SingleClassAdapter.ViewHolder> {
-    private List<SingleClassItem> classList;
+public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHolder> {
+    private List<Subject> classList;
     static class ViewHolder extends RecyclerView.ViewHolder{
         TextView className;
         TextView classPlace;
@@ -19,7 +22,7 @@ public class SingleClassAdapter extends RecyclerView.Adapter<SingleClassAdapter.
             classPlace = v.findViewById(R.id.class_place);
         }
     }
-    public SingleClassAdapter(List<SingleClassItem> classList){
+    public SubjectAdapter(List<Subject> classList){
         this.classList = classList;
     }
 
@@ -32,12 +35,16 @@ public class SingleClassAdapter extends RecyclerView.Adapter<SingleClassAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
-        viewHolder.className.setText(classList.get(i).getClassName());
-        viewHolder.classPlace.setText(classList.get(i).getClassPlace());
+        viewHolder.className.setText(classList.get(i).getClass_name());
+        viewHolder.classPlace.setText(classList.get(i).getClass_place());
     }
 
     @Override
     public int getItemCount() {
         return classList.size();
+    }
+
+    public void setClassList(List<Subject> classList) {
+        this.classList = classList;
     }
 }

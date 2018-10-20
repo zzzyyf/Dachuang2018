@@ -4,14 +4,13 @@ import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 import java.util.ArrayList;
 
 public class SwipeHelper implements View.OnTouchListener {
-    ArrayList<Boolean> lit;//0=未点亮的，1=已点亮的
+    ArrayList<WeekItem> lit;//0=未点亮的，1=已点亮的
     int itemWidth, itemHeight;
     int maxColumn, touchWidth, touchHeight;
     Rect[] rects = new Rect[DateHelper.endWeek];
@@ -30,7 +29,11 @@ public class SwipeHelper implements View.OnTouchListener {
     }
 
     public void setStatusList(ArrayList<Boolean> list){
-        lit = list;
+        lit = new ArrayList<>();
+        for (int i=0;i<list.size();i++){
+            lit.add(new WeekItem((i+""), list.get(i)));
+        }
+
     }
 
     public void setLayout(int column, int width, int height){
@@ -57,19 +60,19 @@ public class SwipeHelper implements View.OnTouchListener {
                     if (rects[i].contains((int)event.getX(), (int)event.getY())) {
                         //该格未被点亮
                         if (isMultiple) {
-                            if (!inTouchArea && !lit.get(i)) {
+                            if (!inTouchArea && !lit.get(i).isLit()) {
                                 ObjectAnimator litAnim = ObjectAnimator.ofArgb(manager.findViewByPosition(i), "backgroundColor", 0x01e1bee7, 0xffe1bee7);
                                 litAnim.setDuration(200)
                                         .start();//点亮该区域
-                                lit.set(i, true);//标示该周被选中
+                                lit.get(i).setLit(true);//标示该周被选中
                                 inTouchArea = true;//设置已进入区域
                             }
                             //该格已被点亮
-                            else if (!inTouchArea && lit.get(i)) {
+                            else if (!inTouchArea && lit.get(i).isLit()) {
                                 ObjectAnimator dimAnim = ObjectAnimator.ofArgb(manager.findViewByPosition(i), "backgroundColor", 0xffe1bee7, 0x01e1bee7);
                                 dimAnim.setDuration(200)
                                         .start();//熄灭该区域
-                                lit.set(i, false);//标示该周被取消选中
+                                lit.get(i).setLit(false);//标示该周被取消选中
                                 inTouchArea = true;//设置已进入区域
                             } else if (inTouchArea) {
                                 //仍在区域内
@@ -83,7 +86,7 @@ public class SwipeHelper implements View.OnTouchListener {
                                 ObjectAnimator litAnim = ObjectAnimator.ofArgb(manager.findViewByPosition(i), "backgroundColor", 0x01e1bee7, 0xffe1bee7);
                                 litAnim.setDuration(200)
                                         .start();//点亮该区域
-                                lit.set(i, true);//标示该周被选中
+                                lit.get(i).setLit(true);//标示该周被选中
                                 isSelected=i;
 
                                 dimOthers(i);
@@ -99,7 +102,7 @@ public class SwipeHelper implements View.OnTouchListener {
             case MotionEvent.ACTION_UP:
                 //若已抬起则肯定不在区域内
                 inTouchArea=false;
-                if(!isMultiple)dimOthers(isSelected);
+                //if(!isMultiple)dimOthers(isSelected);
                 return true;
             default:
         }
@@ -108,11 +111,11 @@ public class SwipeHelper implements View.OnTouchListener {
 
     private void dimOthers(int litPosition){
         for (int i=0;i<lit.size();i++)
-            if (i != litPosition && lit.get(i)){
+            if (i != litPosition && lit.get(i).isLit()){
                 ObjectAnimator dimAnim = ObjectAnimator.ofArgb(manager.findViewByPosition(i), "backgroundColor", 0xffe1bee7, 0x01e1bee7);
                 dimAnim.setDuration(200)
                         .start();//熄灭该区域
-                lit.set(i, false);//标示该周被取消选中
+                lit.get(i).setLit(false);//标示该周被取消选中
             }
     }
 
@@ -135,7 +138,7 @@ public class SwipeHelper implements View.OnTouchListener {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,dpValue,context.getResources().getDisplayMetrics());
     }
 
-    public ArrayList<Boolean> getLit() {
+    public ArrayList<WeekItem> getLit() {
         return lit;
     }
 }

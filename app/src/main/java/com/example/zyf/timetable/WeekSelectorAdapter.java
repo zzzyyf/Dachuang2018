@@ -32,7 +32,7 @@ public class WeekSelectorAdapter extends RecyclerView.Adapter<WeekSelectorAdapte
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
         viewHolder.weekNum.setText(weekList.get(i).getWeekNum());
-        if(weekList.get(i).getLit()!=0)
+        if(weekList.get(i).isLit())
             viewHolder.itemView.setBackgroundColor(0xffe1bee7);
         else viewHolder.itemView.setBackgroundColor(0x01e1bee7);
     }

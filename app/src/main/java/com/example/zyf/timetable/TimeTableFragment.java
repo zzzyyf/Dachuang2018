@@ -14,6 +14,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.zyf.timetable.db.Subject;
+
 import java.util.List;
 
 import static com.example.zyf.timetable.DateHelper.*;
@@ -38,7 +40,12 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
     RecyclerView tableView;
     RecyclerView picker;
     LinearLayoutManager linearManager;
+    GridLayoutManager tableManager;
     SnapHelper snapHelper;
+    SubjectAdapter tableAdapter;
+    PickerAdapterWrapper wrapper;
+
+
 
     public TimeTableFragment() {
         // Required empty public constructor
@@ -96,14 +103,14 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
         super.onDetach();
     }
 
-    public void initFragment(List<SingleClassItem> classList){
+    public void initFragment(List<Subject> classList){
         //获取数据
         initWeekList();
         //初始化picker
         linearManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         picker.setLayoutManager(linearManager);
         PickerAdapter weekAdapter = new PickerAdapter(weekList);
-        PickerAdapterWrapper wrapper = new PickerAdapterWrapper(weekAdapter, this);
+        wrapper = new PickerAdapterWrapper(weekAdapter, this);
         View headerView = new PickerFillin(getContext());
         View footerView = new PickerFillin(getContext());
         wrapper.addHeaderView(headerView);
@@ -116,10 +123,10 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
         picker.scrollToPosition(currentWeek);
 
         //初始化tableView
-        GridLayoutManager manager = new GridLayoutManager(getActivity(), daysPerWeek, LinearLayoutManager.VERTICAL, false);
-        tableView.setLayoutManager(manager);
-        SingleClassAdapter adapter = new SingleClassAdapter(classList);
-        tableView.setAdapter(adapter);
+        tableManager = new GridLayoutManager(getActivity(), daysPerWeek, LinearLayoutManager.VERTICAL, false);
+        tableView.setLayoutManager(tableManager);
+        tableAdapter = new SubjectAdapter(classList);
+        tableView.setAdapter(tableAdapter);
     }
 
     @Override
