@@ -4,6 +4,7 @@
     package="com.example.zyf.timetable">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <application
         android:name="org.litepal.LitePalApplication"
         android:allowBackup="true"
@@ -26,9 +27,13 @@
             android:name=".AddClassActivity"
             android:parentActivityName=".MainActivity"
             android:theme="@style/FullScreenDialogTheme" />
-        <activity android:name=".WeekSelector"
+        <activity
+            android:name=".WeekSelector"
             android:parentActivityName=".AddClassActivity"
             android:theme="@style/Base.Theme.AppCompat.Light.Dialog" />
+        <activity android:name=".SetSemesterActivity"
+            android:theme="@style/FullScreenDialogTheme"
+            />
     </application>
 
 </manifest>

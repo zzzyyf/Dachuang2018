@@ -2,43 +2,54 @@ package com.example.zyf.timetable;
 
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+
 import com.ashokvarma.bottomnavigation.BottomNavigationBar;
 import com.ashokvarma.bottomnavigation.BottomNavigationItem;
 import com.example.zyf.timetable.db.Subject;
+import com.example.zyf.timetable.db.WeekSettings;
 
 import org.litepal.LitePal;
 
 import java.util.List;
-import static com.example.zyf.timetable.DateHelper.*;
+
+import static com.example.zyf.timetable.DateHelper.initWeekList;
+import static com.example.zyf.timetable.DateHelper.setDate;
 
 public class MainActivity extends AppCompatActivity {
     List<Subject> classList;
     Fragment[] fragments;
+    Toolbar toolbar;
+    TextInputLayout startDateText, endDateText, classPDayText;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         SQLiteDatabase db = LitePal.getDatabase();
+        setDate();
+        //TODO: 加入刷新操作
         setContentView(R.layout.activity_main);
         //TODO: add other fragments & Toolbar menu
         //初始化Toolbar
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        //读取Lists
+        //读取数据库
         classList = LitePal.findAll(Subject.class);
+        DateHelper.readFromDb(LitePal.findFirst(WeekSettings.class));
         initWeekList();
 
         //初始化各片段
         fragments = new Fragment[4];
         //防止旋转屏幕时Fragment重复加载
-        if(savedInstanceState == null) {
+        if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, TimeTableFragment.newInstance("1", "2"), "Timetable")
                     .commit();
@@ -53,10 +64,10 @@ public class MainActivity extends AppCompatActivity {
                 .addItem(new BottomNavigationItem(R.drawable.event_list, "事件"))
                 .setFirstSelectedPosition(1)
                 .initialise();
-        naviBar.setTabSelectedListener(new BottomNavigationBar.OnTabSelectedListener(){
+        naviBar.setTabSelectedListener(new BottomNavigationBar.OnTabSelectedListener() {
             @Override
             public void onTabSelected(int position) {
-                switch (position){
+                switch (position) {
                     case 1:
                         //选择“课程表”
 
@@ -68,9 +79,11 @@ public class MainActivity extends AppCompatActivity {
                     default:
                 }
             }
+
             @Override
             public void onTabUnselected(int position) {
             }
+
             @Override
             public void onTabReselected(int position) {
             }
@@ -80,11 +93,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (fragments[1]==null) {
+        if (fragments[1] == null) {
             fragments[1] = getSupportFragmentManager().findFragmentById(R.id.container);
-            ((TimeTableFragment)fragments[1]).initFragment(classList);
+            ((TimeTableFragment) fragments[1]).initFragment(classList);
         }
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
@@ -95,12 +109,13 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.add_class:
                 //点击添加课程按钮
                 startActivityForResult(new Intent(MainActivity.this, AddClassActivity.class), 1);
                 break;
             case R.id.set_table_item:
+                startActivityForResult(new Intent(MainActivity.this, SetSemesterActivity.class), 2);
                 //点击课表设置按钮
                 break;
             default:
@@ -110,9 +125,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        switch (requestCode){
+        switch (requestCode) {
             case 1:
-                if (resultCode==RESULT_OK) {
+                if (resultCode == RESULT_OK) {
                     classList = LitePal.findAll(Subject.class);
                     //若当前显示的碎片不是Timetable
                     if (!(getSupportFragmentManager().findFragmentById(R.id.container) instanceof TimeTableFragment)) {
@@ -124,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
                     //更新数据
                     ((TimeTableFragment) getSupportFragmentManager().findFragmentById(R.id.container)).tableAdapter.setClassList(classList);
                     ((TimeTableFragment) getSupportFragmentManager().findFragmentById(R.id.container)).tableAdapter.notifyDataSetChanged();
-                }else{
+                } else {
                     if (!(getSupportFragmentManager().findFragmentById(R.id.container) instanceof TimeTableFragment)) {
                         //把当前显示的碎片替换为Timetable
                         getSupportFragmentManager().beginTransaction()
@@ -133,6 +148,19 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 break;
+            case 2:
+                if (resultCode==RESULT_OK){
+                    initWeekList();
+                    //若当前显示的碎片不是Timetable
+                    if (!(getSupportFragmentManager().findFragmentById(R.id.container) instanceof TimeTableFragment)) {
+                        //把当前显示的碎片替换为Timetable
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.container, TimeTableFragment.newInstance("1", "2"), "Timetable")
+                                .commit();
+                    }
+                    //更新数据
+                    ((TimeTableFragment) getSupportFragmentManager().findFragmentById(R.id.container)).wrapper.notifyDataSetChanged();
+                }
             default:
         }
     }

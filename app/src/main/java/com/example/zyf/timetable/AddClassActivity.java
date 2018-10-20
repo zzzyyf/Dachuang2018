@@ -73,8 +73,8 @@ public class AddClassActivity extends AppCompatActivity {
         GridLayoutManager sessionsManager = new GridLayoutManager(this, 4, LinearLayoutManager.VERTICAL, false);
         weekdayPicker.setLayoutManager(weekdaysManager);
         sessionPicker.setLayoutManager(sessionsManager);
-        WeekSelectorAdapter weekdaysAdapter = new WeekSelectorAdapter(weekdays);
-        WeekSelectorAdapter sessionsAdapter = new WeekSelectorAdapter(sessions);
+        WeekSelectorAdapter weekdaysAdapter = new WeekSelectorAdapter(weekdays, 15);
+        WeekSelectorAdapter sessionsAdapter = new WeekSelectorAdapter(sessions, 15);
         weekdayPicker.setAdapter(weekdaysAdapter);
         sessionPicker.setAdapter(sessionsAdapter);
 

@@ -2,6 +2,7 @@ package com.example.zyf.timetable;
 
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,14 +12,17 @@ import java.util.List;
 
 public class WeekSelectorAdapter extends RecyclerView.Adapter<WeekSelectorAdapter.ViewHolder> {
     List<WeekItem> weekList;
-    public WeekSelectorAdapter(List<WeekItem> list){
+    int textSize;
+    public WeekSelectorAdapter(List<WeekItem> list, int size){
         weekList = list;
+        textSize = size;
     }
     public class ViewHolder extends RecyclerView.ViewHolder{
         TextView weekNum;
         ViewHolder(View v){
             super(v);
             weekNum = v.findViewById(R.id.week_selector_num);
+            weekNum.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize);
         }
     }
 
