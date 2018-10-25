@@ -2,6 +2,7 @@ package com.example.zyf.timetable;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -35,6 +36,9 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
     SnapHelper snapHelper;
     SubjectAdapter tableAdapter;
     PickerAdapterWrapper wrapper;
+    boolean isDragging;//判断scroll是否是用户主动拖拽
+    boolean isScrolling;//判断scroll是否处于滑动中
+    int position;
     private String mParam1;
     private String mParam2;
 
@@ -109,11 +113,35 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
         wrapper.addHeaderView(headerView);
         wrapper.addFooterView(footerView);
         picker.setAdapter(wrapper);
+        picker.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                int firstPosition;
+                switch(newState){
+                    case RecyclerView.SCROLL_STATE_SETTLING:
+                        if (!isDragging && !isScrolling){
+                            isScrolling = true; //a scrolling occurs
+                        }
+                        break;
+                    case RecyclerView.SCROLL_STATE_DRAGGING:
+                        isDragging = true; //如果是用户主动滑动recyclerview，则不触发位置计算。
+                        break;
+                    case RecyclerView.SCROLL_STATE_IDLE:
+                        if (!isDragging && isScrolling){
+                            isDragging = false;
+                            isScrolling = false;
+                            PickerHelper.changeWeekNumHighlight(
+                                    ((PickerAdapter.ViewHolder)picker.findViewHolderForAdapterPosition(position)).weekNum);  //由于滚动事件会多次触发IDLE状态，我们只需要在第一次IDLE被触发时获取ItemView。
+                        }
+                        break;
+                }
+            }
+        });
 
         snapHelper = new LinearSnapHelper();
         snapHelper.attachToRecyclerView(picker);
-        //set initial position of picker
-        picker.scrollToPosition(currentWeek);
+
 
         //初始化tableView
         tableManager = new GridLayoutManager(getActivity(), daysPerWeek, LinearLayoutManager.VERTICAL, false);
@@ -122,20 +150,26 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
         tableView.setAdapter(tableAdapter);
     }
 
+    /**
+     * 滚动至将指定的adapter位置居中的位置
+     * @param position 要居中的adapter位置
+     */
     @Override
-    public void scrollToPosition(int position, TextView view) {
+    public void scrollToPosition(int position) {
+        this.position = position;
         smoothMoveToPosition(picker, position);
         PickerHelper.setDefaultColor(getResources().getColor(R.color.darkslategrey));
         PickerHelper.setHighlightColor(getResources().getColor(R.color.darkviolet));
-        PickerHelper.changeWeekNumHighlight(view);
-        selectedWeek = Integer.parseInt(view.getText().toString());
-        Toast.makeText(getContext(), "第 " + selectedWeek + " 周", Toast.LENGTH_SHORT).show();
-        tableAdapter.setClassList(((MainActivity) getActivity()).fillWithEmptyClass(selectedWeek));
+
+        Toast.makeText(getContext(), "第 " + position + " 周", Toast.LENGTH_SHORT).show();
+        //更新数据
+        DateHelper.setSelectedWeek(position);
+        tableAdapter.setClassList(((MainActivity) getActivity()).fillWithEmptyClass(getSelectedWeek()));
         tableAdapter.notifyDataSetChanged();
     }
 
     /**
-     * 滑动到指定位置
+     * 滑动到指定的adapter位置
      * 已知目前的顶端位置和目标中间位置，首先把目标中间位置转换为目标顶端位置（-2）
      * 之后，若目标顶端位置在目前顶端之前（不可见），则直接滚动至目标顶端位置即可
      * 若目标顶端位置目前可见，则需要测算目标顶端至容器顶的距离，这需要算出目标顶端在容器中的序号，
@@ -143,7 +177,7 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
      * 若目标顶端位置在目前底端之后，则先滚动至可见，再滚动至目前顶端，即先case1再case2.
      *
      * @param mRecyclerView
-     * @param position      欲滚动至RecyclerView中间的位置
+     * @param position      欲滚动至RecyclerView中间的adapter位置
      */
     public void smoothMoveToPosition(RecyclerView mRecyclerView, int position) {
         // 第一个可见位置
@@ -156,19 +190,20 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
         if (firstItem < 1) firstItem = 1;
         if (lastItem > endWeek) lastItem = endWeek;
 
-        if (position < firstItem || position > lastItem) {
-            mRecyclerView.smoothScrollToPosition(position);
-            View centerView = snapHelper.findSnapView(linearManager);
-            int length = centerView.getWidth();
-            int center = linearManager.getPosition(centerView);
-            mRecyclerView.smoothScrollBy(length * (position - center), 0);
-        }
-
         // 跳转位置在第一个可见项之后，最后一个可见项之前
         // smoothScrollToPosition根本不会动，此时调用smoothScrollBy来滑动到指定位置
+
         View centerView = snapHelper.findSnapView(linearManager);
         int length = centerView.getWidth();
         int center = linearManager.getPosition(centerView);
-        mRecyclerView.smoothScrollBy(length * (position - center), 0);
+        mRecyclerView.smoothScrollBy((length+1) * (position - center), 0);
+
+
+    }
+
+    @Override
+    public void onDestroy() {
+        PickerHelper.freeTextView();
+        super.onDestroy();
     }
 }

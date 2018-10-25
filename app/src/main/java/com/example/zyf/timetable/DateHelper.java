@@ -2,21 +2,24 @@ package com.example.zyf.timetable;
 
 import com.example.zyf.timetable.db.WeekSettings;
 
+import org.joda.time.LocalDate;
+import org.joda.time.Period;
+import org.joda.time.PeriodType;
 import org.litepal.LitePal;
 import org.litepal.exceptions.LitePalSupportException;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 public class DateHelper {
     public static boolean isDateSet = false;
-    public static boolean isWeekSet = false;
-    static int year, month, day;//month为真实月份-1
-    static Calendar today;
+    static int year, month, day;//month为真实月份
+    static LocalDate today;
     static int currentWeek = 1, selectedWeek;
-    static int currentWeekday;//currentWeekday:0-Sunday, 1-Monday, etc, 6-Saturday.
+    static int currentWeekday;//currentWeekday:1-Monday, etc, 6-Saturday, 7-Sunday.
+
     //以下需要用数据库存储
+    public static boolean isWeekSet = false;
     static int startYear, startMonth, startDay;
     static int endYear, endMonth, endDay;
     static int startWeek = 1, endWeek = 20;
@@ -34,8 +37,8 @@ public class DateHelper {
         DateHelper.year = year;
         DateHelper.month = month;
         DateHelper.day = day;
-        today.set(year, month, day);
-        currentWeekday = today.get(Calendar.DAY_OF_WEEK) - 1;
+        today = new LocalDate(year, month, day);
+        currentWeekday = today.getDayOfWeek();
         isDateSet = true;
 
     }
@@ -44,35 +47,39 @@ public class DateHelper {
      * 自动设定当前日期。注意，每过一天需要重新调用。
      */
     public static void setDate() {
-        today = Calendar.getInstance();
-        year = today.get(Calendar.YEAR);
-        month = today.get(Calendar.MONTH);
-        day = today.get(Calendar.DAY_OF_MONTH);
+        today = new LocalDate();
+        year = today.getYear();
+        month = today.getMonthOfYear();
+        day = today.getDayOfMonth();
+        if (isWeekSet)
+            setCurrentWeek(new LocalDate(startYear, startMonth, startDay));
     }
 
 
-    public static void setWeek(Calendar startDate, Calendar endDate, int daysPerWeek, int classesPerDay) {
+    public static void setWeek(LocalDate startDate, LocalDate endDate, int daysPerWeek, int classesPerDay) {
         setWeek(startDate, endDate, classesPerDay);
         DateHelper.daysPerWeek = daysPerWeek;
     }
 
 
-    public static void setWeek(Calendar startDate, Calendar endDate, int classesPerDay) {
-        startYear = startDate.get(Calendar.YEAR);
-        startMonth = startDate.get(Calendar.MONTH);
-        startDay = startDate.get(Calendar.DAY_OF_MONTH);
-        endYear = endDate.get(Calendar.YEAR);
-        endMonth = endDate.get(Calendar.MONTH);
-        endDay = endDate.get(Calendar.DAY_OF_MONTH);
+    public static void setWeek(LocalDate startDate, LocalDate endDate, int classesPerDay) {
+        startYear = startDate.getYear();
+        startMonth = startDate.getMonthOfYear();
+        startDay = startDate.getDayOfMonth();
+        endYear = endDate.getYear();
+        endMonth = endDate.getMonthOfYear();
+        endDay = endDate.getDayOfMonth();
         DateHelper.classesPerDay = classesPerDay;
 
         endWeek = startWeek + countEndWeek(startDate, endDate);
         setCurrentWeek(startDate);
+        setSelectedWeek(currentWeek);
         isWeekSet = true;
     }
 
     /**
      * 给weekList分配空间及初始化内容的方法。
+     * weekList从1开始，即weekList的元素值为index+1.
      */
     public static void initWeekList() {
         weekList = new ArrayList<>();
@@ -81,26 +88,19 @@ public class DateHelper {
         }
     }
 
-    private static int countEndWeek(Calendar startDate, Calendar endDate) {
+    private static int countEndWeek(LocalDate startDate, LocalDate endDate) {
         int end = 0;
-        //设置endWeek
-        while (startDate.before(endDate)) {
-            // 如果开始日期和结束日期在同年、同月且当前月的同一周时结束循环
-            if (startDate.get(Calendar.YEAR) == endDate.get(Calendar.YEAR)
-                    && startDate.get(Calendar.MONTH) == endDate.get(Calendar.MONTH)
-                    && startDate.get(Calendar.DAY_OF_WEEK_IN_MONTH) == endDate.get(Calendar.DAY_OF_WEEK_IN_MONTH)) {
-                //TODO: the algorithm here is wrong.
-                break;
-            } else {
-                startDate.add(Calendar.DAY_OF_YEAR, 7);
-                end += 1;
-            }
-        }
+        endDate = endDate.withDayOfWeek(1);//转化为当周周一
+        int days = new Period(startDate, endDate, PeriodType.days()).getDays();//获取相差天数
+
+        //若相差0-6天说明在同一周
+        for(;!(days>=0 && days<7);days-=7) end+=1;
         return end;
     }
 
-    public static void setCurrentWeek(Calendar startDate) {
+    public static void setCurrentWeek(LocalDate startDate) {
         currentWeek = startWeek + countEndWeek(startDate, today);
+        setSelectedWeek(currentWeek);
     }
 
     public static int getSelectedWeek() {

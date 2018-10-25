@@ -12,13 +12,14 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 import com.example.zyf.timetable.db.WeekSettings;
+
+import org.joda.time.LocalDate;
 import org.litepal.exceptions.LitePalSupportException;
-import java.util.Calendar;
 import static com.example.zyf.timetable.DateHelper.*;
 
 public class SetSemesterActivity extends AppCompatActivity implements DatePickerFragment.SendDate {
     TextInputLayout startDateText, endDateText, classPDayText;
-    Calendar startDate, endDate;
+    LocalDate startDate, endDate;
     DatePickerFragment startFragment = new DatePickerFragment(), endFragment = new DatePickerFragment();
     boolean isFilled, isStartFilled=false, isEndFilled=false;
     Button saveBtn;
@@ -35,25 +36,26 @@ public class SetSemesterActivity extends AppCompatActivity implements DatePicker
         classPDayText = findViewById(R.id.classes_per_day);
         saveBtn = findViewById(R.id.save_btn);
         closeBtn = findViewById(R.id.close_btn);
-        startDateText.getEditText().setText(String.format("%d-%d-%d", startYear, startMonth+1, startDay));
+        startDateText.getEditText().setText(String.format("%d-%d-%d", startYear, startMonth, startDay));
         startDateText.getEditText().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startFragment.isStart=true;
-                Calendar date = Calendar.getInstance();
+                LocalDate date = new LocalDate();
                 if (DateHelper.isWeekSet)
-                    date.set(startYear, startMonth, startDay);
+                    date = new LocalDate(startYear, startMonth, startDay);
                 startFragment.c= date;
                 startFragment.show(SetSemesterActivity.this.getSupportFragmentManager(), "datePicker");
             }
         });
-        endDateText.getEditText().setText(String.format("%d-%d-%d", endYear, endMonth+1, endDay));
+        endDateText.getEditText().setText(String.format("%d-%d-%d", endYear, endMonth, endDay));
         endDateText.getEditText().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                endFragment.isStart=false;Calendar date = Calendar.getInstance();
+                endFragment.isStart=false;
+                LocalDate date = new LocalDate();
                 if (DateHelper.isWeekSet)
-                    date.set(endYear, endMonth, endDay);
+                    date = new LocalDate(endYear, endMonth, endDay);
                 endFragment.c= date;
                 endFragment.show(SetSemesterActivity.this.getSupportFragmentManager(), "datePicker");
             }
@@ -97,15 +99,13 @@ public class SetSemesterActivity extends AppCompatActivity implements DatePicker
     @Override
     public void sendDate(int year, int month, int day, boolean isStart) {
         if (isStart) {
-            startDate = Calendar.getInstance();
-            startDate.set(year, month, day);
-            startDateText.getEditText().setText(String.format("%d-%d-%d", year, month+1, day));
+            startDate = new LocalDate(year, month, day);
+            startDateText.getEditText().setText(String.format("%d-%d-%d", year, month, day));
             isStartFilled=true;
 
         }else{
-            endDate = Calendar.getInstance();
-            endDate.set(year, month, day);
-            endDateText.getEditText().setText(String.format("%d-%d-%d", year, month+1, day));
+            endDate = new LocalDate(year, month, day);
+            endDateText.getEditText().setText(String.format("%d-%d-%d", year, month, day));
             isEndFilled=true;
         }
     }

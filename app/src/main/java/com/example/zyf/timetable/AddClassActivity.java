@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AddClassActivity extends AppCompatActivity {
+    //TODO: 在课程表点击新增课表时能读取该点击位置的weekday和session并能初始化
     EditText weekText;//显示已选择的所有周
     AutoCompleteTextView nameText;//课名
     MultiAutoCompleteTextView placeText;//上课地点
@@ -297,7 +298,6 @@ public class AddClassActivity extends AppCompatActivity {
                     if (litWeeksList.get(i) != 0) selectedWeeks.add(i + 1);
                 subject.setWeeks(selectedWeeks);
                 subject.setWeekday(weekdayHelper.isSelected);
-
                 subject.setStartPeriod(periods.get(0));
                 subject.setEndPeriod(periods.get(periods.size()-1));
                 try {
@@ -307,7 +307,9 @@ public class AddClassActivity extends AppCompatActivity {
                     Toast.makeText(AddClassActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
 
-                setResult(RESULT_OK);
+                Intent intent = new Intent();
+                intent.putExtra("weekday", weekdayHelper.isSelected);
+                setResult(RESULT_OK, intent);
                 finish();
             //设置点击toolbar返回按钮的动作
             case android.R.id.home:

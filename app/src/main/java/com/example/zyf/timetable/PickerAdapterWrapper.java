@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
+import static com.example.zyf.timetable.DateHelper.setSelectedWeek;
 
 public class PickerAdapterWrapper extends RecyclerView.Adapter<PickerAdapter.ViewHolder> {
     enum ITEM_TYPE{
@@ -60,9 +61,11 @@ public class PickerAdapterWrapper extends RecyclerView.Adapter<PickerAdapter.Vie
             holder.weekNum.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    int selected = holder.getAdapterPosition();
+                    setSelectedWeek(selected);
                     //调用RecyclerView的activity处理滚动
-                    handler.scrollToPosition(holder.getAdapterPosition(), holder.weekNum);
-
+                    handler.scrollToPosition(selected);
+                    PickerHelper.changeWeekNumHighlight(holder.weekNum);
                 }
             });
         }

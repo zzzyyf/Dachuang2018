@@ -25,7 +25,6 @@ import static com.example.zyf.timetable.DateHelper.*;
 
 public class MainActivity extends AppCompatActivity {
     List<Subject> allClassList;
-    List<Subject> classList;
     List<List<Subject>> weekClassList;
     Fragment[] fragments;
     Toolbar toolbar;
@@ -36,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         SQLiteDatabase db = LitePal.getDatabase();
         //LitePal.deleteAll("Subject");
-        setDate();
+
         //TODO: 加入刷新操作
         setContentView(R.layout.activity_main);
         //TODO: add other fragments & Toolbar menu
@@ -46,12 +45,11 @@ public class MainActivity extends AppCompatActivity {
 
         //读取数据库
         allClassList = LitePal.order("startperiod asc").find(Subject.class);//按小节的升序读取所有课程
-
         WeekSettings weekSettings = LitePal.findFirst(WeekSettings.class);
         if (weekSettings != null)
             DateHelper.readFromDb(weekSettings);
         initWeekList();
-
+        setDate();
         fillWithEmptyClass(currentWeek);
 
         //初始化各片段
@@ -62,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
                     .add(R.id.container, TimeTableFragment.newInstance("1", "2"), "Timetable")
                     .commit();
         }
+        //TODO: 旋转屏幕时刷新recyclerview
 
         //初始化BottomNaviBar
         BottomNavigationBar naviBar = findViewById(R.id.navi_main);
@@ -104,6 +103,19 @@ public class MainActivity extends AppCompatActivity {
         if (fragments[1] == null) {
             fragments[1] = getSupportFragmentManager().findFragmentById(R.id.container);
             ((TimeTableFragment) fragments[1]).initFragment(weekClassList);
+
+            //set initial position of picker
+            if (isWeekSet) {
+                ((TimeTableFragment) fragments[1]).picker.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        //直接传入adapterPosition即周数即可
+                        //TODO: 偶尔会报错Fragment not attached to a context.
+                        ((TimeTableFragment) fragments[1]).scrollToPosition(currentWeek);
+
+                    }
+                });
+            }
         }
     }
 
@@ -136,7 +148,6 @@ public class MainActivity extends AppCompatActivity {
         switch (requestCode) {
             case 1:
                 if (resultCode == RESULT_OK) {
-                    classList = LitePal.findAll(Subject.class);
                     //若当前显示的碎片不是Timetable
                     if (!(getSupportFragmentManager().findFragmentById(R.id.container) instanceof TimeTableFragment)) {
                         //把当前显示的碎片替换为Timetable
@@ -145,6 +156,10 @@ public class MainActivity extends AppCompatActivity {
                                 .commit();
                     }
                     //更新数据
+                    allClassList = LitePal.order("startperiod asc").find(Subject.class);//按小节的升序读取所有课程
+                    int weekday = data.getIntExtra("weekday", 0);
+                    //TODO: 仅当添加了在本周的课程时才更新
+                    weekClassList.set(weekday, fillWeekdayWithEmpty(getSelectedWeek(), weekday));
                     ((TimeTableFragment) getSupportFragmentManager().findFragmentById(R.id.container)).tableAdapter.setClassList(weekClassList);
                     ((TimeTableFragment) getSupportFragmentManager().findFragmentById(R.id.container)).tableAdapter.notifyDataSetChanged();
                 } else {
@@ -174,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public List<List<Subject>> fillWithEmptyClass(int selectedWeek) {
-        classList = new ArrayList<>();
+        List<Subject> classList = new ArrayList<>();
         weekClassList = new ArrayList<>(7);
         for (int i = 0; i < 7; i++) {
             weekClassList.add(new ArrayList<Subject>());
@@ -249,4 +264,72 @@ public class MainActivity extends AppCompatActivity {
         return weekClassList;
     }
 
+    public List<Subject> fillWeekdayWithEmpty(int selectedWeek, int weekday){
+        List<Subject> classList = new ArrayList<>();
+        for (Subject elem : allClassList
+                ) {
+            //如果某节课在本周
+            if (elem.getWeeks().contains(selectedWeek) && elem.getWeekday()==weekday) {
+                classList.add(elem);//将该节课添加
+            }
+        }
+
+        List<Integer> period = new ArrayList<>();
+        boolean isContinuing = false;//true为在一节空课内
+        Subject empty=new Subject();
+        for (int k = 0,j = 0; j < classesPerDay; j++,k++) {
+            Subject elem;
+            //若j已经过了最后一节有课的课，即后面全是空课
+            if (k> classList.size()-1) {
+                empty = new Subject();
+                empty.setWeekday(weekday);
+                for (;j<classesPerDay;j++)
+                    period.add(j);
+                empty.setStartPeriod(period.get(0)+1);
+                empty.setEndPeriod(period.get(period.size()-1)+1);
+                classList.add(empty);
+                break;//周i的空课添加完了
+            }
+            //没过的话还得检查j是否在这一节课之前
+            elem = classList.get(k);
+            //若不是在一节空课里，就跳过有课的课
+            while(!isContinuing && (j>=(elem.getStartPeriod()-1) && j<=(elem.getEndPeriod()-1)))j++;
+            //现在j要么在有课之前的空课，要么后面全是空课，要么==classesPerDay
+            if(j==classesPerDay)break;//周i的空课添加完了
+
+            //若j及后面全是空课
+            if(j>elem.getEndPeriod()-1) {
+                empty = new Subject();
+                empty.setWeekday(weekday);
+                for (; j < classesPerDay; j++)
+                    period.add(j);
+                empty.setStartPeriod(period.get(0)+1);
+                empty.setEndPeriod(period.get(period.size()-1)+1);
+                classList.add(empty);
+                break;//周i的空课添加完了
+            } else{
+                //如果不连续说明刚刚出现空课
+                if (!isContinuing) {
+                    //初始化空课
+                    empty = new Subject();
+                    empty.setWeekday(weekday);
+                    period.add(j);
+                    empty.setStartPeriod(period.get(0)+1);
+                    empty.setEndPeriod(period.get(period.size()-1)+1);
+                    isContinuing = true;
+                } else {
+                    period.add(j);
+                    empty.setStartPeriod(period.get(0)+1);
+                    empty.setEndPeriod(period.get(period.size()-1)+1);
+                }
+                if(j==elem.getEndPeriod()-1) {
+                    classList.add(k, empty);
+                    isContinuing=false;
+                }
+            }
+            //若j在已有课程范围内则直接跳过j即可
+        }
+
+        return classList;
+    }
 }

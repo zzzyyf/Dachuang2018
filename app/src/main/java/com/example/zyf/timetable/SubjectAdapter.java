@@ -90,12 +90,11 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
         //TODO: unfinished
         int j = 0, pos = 0, num = 0;//pos为在每个子数组中的位置，num为第num个子数组
         int sum = 0;
-        for (; j < classList.size() - 1; j++) {
+        for (; j < classList.size(); j++) {
             sum += (classList.get(j).size());
         }
-        for (j = 0; i >= 0 && j < sum - 1; j++, i--) {
+        for (j = 0; i >= 0 && j < sum; j++, i--) {
             num = j % DateHelper.daysPerWeek;
-            if (num != 0) num++;//
 
             if (j != 0 && num == 0) pos++;//num不是第一次触发时为0，说明已经把所有子数组中第pos个元素都读取完了。
             while (num < DateHelper.daysPerWeek && pos >= classList.get(num).size())
