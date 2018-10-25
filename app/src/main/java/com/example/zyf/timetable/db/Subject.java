@@ -18,13 +18,17 @@ public class Subject extends LitePalSupport {
      */
     private List<Integer> weeks;
     /**
-     * 上本节课的各周次
+     * 在一周的哪一天上本节课
      */
     private int weekday;
     /**
-     * 单节课的节数
+     * 本节课开始的节数,1为第一节
      */
-    private List<Integer> periods;
+    private int startPeriod;
+    /**
+     * 本节课结束的节数，1为第一节
+     */
+    private int endPeriod;
 
     public String getClass_name() {
         return class_name;
@@ -58,11 +62,35 @@ public class Subject extends LitePalSupport {
         this.weekday = weekday;
     }
 
-    public List<Integer> getPeriods() {
-        return periods;
+    /**
+     * 获取本节课开始上课的节数，1为第一节。
+     * @return
+     */
+    public int getStartPeriod() {
+        return startPeriod;
     }
 
-    public void setPeriods(List<Integer> periods) {
-        this.periods = periods;
+    /**
+     * 设置本节课开始上课的节数，1为第一节。
+     * @param startPeriod
+     */
+    public void setStartPeriod(int startPeriod) {
+        this.startPeriod = startPeriod;
+    }
+
+    /**
+     * 获取本节课结束的节数（即上到第几节），1为第一节。
+     * @return
+     */
+    public int getEndPeriod() {
+        return endPeriod;
+    }
+
+    /**
+     * 设置本节课结束的节数（即上到第几节），1为第一节。
+     * @param endPeriod
+     */
+    public void setEndPeriod(int endPeriod) {
+        this.endPeriod = endPeriod;
     }
 }

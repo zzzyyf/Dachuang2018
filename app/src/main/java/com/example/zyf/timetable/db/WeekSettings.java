@@ -7,8 +7,7 @@ import java.util.List;
 public class WeekSettings extends LitePalSupport {
     private int startYear, startMonth, startDay;
     private int endYear, endMonth, endDay;
-    private int currentWeek=1, startWeek=1, endWeek=20;
-    private int currentWeekday;//currentWeekday:0-Sunday, 1-Monday, etc, 6-Saturday.
+    private int startWeek=1, endWeek=20;
     private int daysPerWeek=7, classesPerDay=12;
 
     private List<Integer> weekList;
@@ -64,14 +63,6 @@ public class WeekSettings extends LitePalSupport {
         this.endDay = endDay;
     }
 
-    public int getCurrentWeek() {
-        return currentWeek;
-    }
-
-    public void setCurrentWeek(int currentWeek) {
-        this.currentWeek = currentWeek;
-    }
-
     public int getStartWeek() {
         return startWeek;
     }
@@ -86,14 +77,6 @@ public class WeekSettings extends LitePalSupport {
 
     public void setEndWeek(int endWeek) {
         this.endWeek = endWeek;
-    }
-
-    public int getCurrentWeekday() {
-        return currentWeekday;
-    }
-
-    public void setCurrentWeekday(int currentWeekday) {
-        this.currentWeekday = currentWeekday;
     }
 
     public int getDaysPerWeek() {

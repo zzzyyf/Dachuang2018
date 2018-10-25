@@ -35,7 +35,6 @@ public class SetSemesterActivity extends AppCompatActivity implements DatePicker
         classPDayText = findViewById(R.id.classes_per_day);
         saveBtn = findViewById(R.id.save_btn);
         closeBtn = findViewById(R.id.close_btn);
-
         startDateText.getEditText().setText(String.format("%d-%d-%d", startYear, startMonth+1, startDay));
         startDateText.getEditText().setOnClickListener(new View.OnClickListener() {
             @Override

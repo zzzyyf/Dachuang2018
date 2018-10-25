@@ -13,11 +13,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.example.zyf.timetable.db.Subject;
-
 import java.util.List;
-
 import static com.example.zyf.timetable.DateHelper.*;
 
 
@@ -31,12 +28,6 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-
-    private String mParam1;
-    private String mParam2;
-
-    int selectedWeek;
-
     RecyclerView tableView;
     RecyclerView picker;
     LinearLayoutManager linearManager;
@@ -44,7 +35,8 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
     SnapHelper snapHelper;
     SubjectAdapter tableAdapter;
     PickerAdapterWrapper wrapper;
-
+    private String mParam1;
+    private String mParam2;
 
 
     public TimeTableFragment() {
@@ -81,7 +73,8 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.timetable_layout, container, false);
-        //TODO: 创建周数显示器（以及实现自动隐藏空白weekday功能）
+        //TODO: 创建周几显示器（以及实现自动隐藏空白weekday功能）
+        //TODO: 创建节数显示器
         //TODO：添加recyclerView的空白（数据为空白时显示的）view
 
         //初始化日期选择器
@@ -103,7 +96,7 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
         super.onDetach();
     }
 
-    public void initFragment(List<Subject> classList){
+    public void initFragment(List<List<Subject>> classList) {
         //获取数据
         initWeekList();
         //初始化picker
@@ -125,7 +118,7 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
         //初始化tableView
         tableManager = new GridLayoutManager(getActivity(), daysPerWeek, LinearLayoutManager.VERTICAL, false);
         tableView.setLayoutManager(tableManager);
-        tableAdapter = new SubjectAdapter(classList);
+        tableAdapter = new SubjectAdapter(getContext(), classList);
         tableView.setAdapter(tableAdapter);
     }
 
@@ -136,7 +129,9 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
         PickerHelper.setHighlightColor(getResources().getColor(R.color.darkviolet));
         PickerHelper.changeWeekNumHighlight(view);
         selectedWeek = Integer.parseInt(view.getText().toString());
-        Toast.makeText(getContext(), "第 "+selectedWeek+" 周", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "第 " + selectedWeek + " 周", Toast.LENGTH_SHORT).show();
+        tableAdapter.setClassList(((MainActivity) getActivity()).fillWithEmptyClass(selectedWeek));
+        tableAdapter.notifyDataSetChanged();
     }
 
     /**
@@ -146,25 +141,34 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
      * 若目标顶端位置目前可见，则需要测算目标顶端至容器顶的距离，这需要算出目标顶端在容器中的序号，
      * 所以序号为目标顶端-目前可见顶端。测算出距离之后再滚动即可。
      * 若目标顶端位置在目前底端之后，则先滚动至可见，再滚动至目前顶端，即先case1再case2.
+     *
      * @param mRecyclerView
-     * @param position 欲滚动至RecyclerView中间的位置
+     * @param position      欲滚动至RecyclerView中间的位置
      */
     public void smoothMoveToPosition(RecyclerView mRecyclerView, int position) {
         // 第一个可见位置
         //用getChildAt(0)出现连续前点时向前偏移的现象
-        int firstItem = ((LinearLayoutManager)mRecyclerView.getLayoutManager()).findFirstVisibleItemPosition();
+        int firstItem = ((LinearLayoutManager) mRecyclerView.getLayoutManager()).findFirstVisibleItemPosition();
         // 最后一个可见位置
-        int lastItem = ((LinearLayoutManager)mRecyclerView.getLayoutManager()).findLastVisibleItemPosition();
+        int lastItem = ((LinearLayoutManager) mRecyclerView.getLayoutManager()).findLastVisibleItemPosition();
 
         //对添加了头、尾的修正
-        if(firstItem<1)firstItem=1;
-        if(lastItem>endWeek)lastItem=endWeek;
+        if (firstItem < 1) firstItem = 1;
+        if (lastItem > endWeek) lastItem = endWeek;
+
+        if (position < firstItem || position > lastItem) {
+            mRecyclerView.smoothScrollToPosition(position);
+            View centerView = snapHelper.findSnapView(linearManager);
+            int length = centerView.getWidth();
+            int center = linearManager.getPosition(centerView);
+            mRecyclerView.smoothScrollBy(length * (position - center), 0);
+        }
 
         // 跳转位置在第一个可见项之后，最后一个可见项之前
         // smoothScrollToPosition根本不会动，此时调用smoothScrollBy来滑动到指定位置
         View centerView = snapHelper.findSnapView(linearManager);
         int length = centerView.getWidth();
         int center = linearManager.getPosition(centerView);
-        mRecyclerView.smoothScrollBy(length*(position-center), 0);
+        mRecyclerView.smoothScrollBy(length * (position - center), 0);
     }
 }

@@ -21,21 +21,23 @@ import android.widget.Toast;
 
 import com.example.zyf.timetable.db.Subject;
 
+import org.litepal.LitePal;
 import org.litepal.exceptions.LitePalSupportException;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class AddClassActivity extends AppCompatActivity {
-    EditText weekText;//显示已选择的周
+    EditText weekText;//显示已选择的所有周
     AutoCompleteTextView nameText;//课名
     MultiAutoCompleteTextView placeText;//上课地点
     //TODO: 实现自动填充课名、地点
-    ArrayList<Integer> litWeeksList;//已选择周数的列表
+    ArrayList<Integer> litWeeksList, periods;//已选择周数的列表
     RecyclerView weekdayPicker, sessionPicker;
     List<WeekItem> weekdays, sessions;//已选择的上课日、上课节的列表
-    Subject classItem = new Subject();//待存储的一节课
     SwipeHelper weekdayHelper, sessionHelper;
+
+    final int PERIOD_EMPTY=1, PERIOD_DISCONTINUED=2, PERIOD_LAGGED=3, PERIOD_OK=4;//period为空，period不连续,当前课程与已有某节课重复,课程正常
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -72,6 +74,7 @@ public class AddClassActivity extends AppCompatActivity {
         final LinearLayoutManager weekdaysManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         GridLayoutManager sessionsManager = new GridLayoutManager(this, 4, LinearLayoutManager.VERTICAL, false);
         weekdayPicker.setLayoutManager(weekdaysManager);
+        //TODO: 按照早、午、晚的课节排列
         sessionPicker.setLayoutManager(sessionsManager);
         WeekSelectorAdapter weekdaysAdapter = new WeekSelectorAdapter(weekdays, 15);
         WeekSelectorAdapter sessionsAdapter = new WeekSelectorAdapter(sessions, 15);
@@ -215,32 +218,43 @@ public class AddClassActivity extends AppCompatActivity {
         }
     }
 
-    boolean checkWeekItems(List<WeekItem> list) {
-        for (WeekItem item : list
-                ) {
-            if (item.isLit()) return true;
-        }
-        return false;
-    }
-
-    ArrayList<Integer> saveSelectedItems(List<WeekItem> list) {
-        ArrayList<Integer> listToSave = new ArrayList<>();
-        String str;
+    /**
+     *
+     * @param list
+     * @return
+     */
+    int checkWeekItems(List<WeekItem> list, int weekday) {
+        periods = new ArrayList<>();
         for (WeekItem item : list
                 ) {
             if (item.isLit()) {
-                str = item.getWeekNum().trim();
-                StringBuilder builder = new StringBuilder();
-                if (!"".equals(str)) {
-                    for (int i = 0; i < str.length(); i++) {
-                        if (str.charAt(i) >= 48 && str.charAt(i) <= 57)
-                            builder.append(str.charAt(i));
-                    }
-                }
-                listToSave.add(Integer.parseInt(builder.toString()));
+                //说明节列表非空
+                periods.add(list.indexOf(item)+1);//把选择的节数添加至列表
             }
         }
-        return listToSave;
+        //检查列表是否连续
+        for (int i=0,j=periods.get(0); i<periods.size();i++,j++){
+            if(j!=periods.get(i)) {
+                Toast.makeText(AddClassActivity.this, "一次只能添加一节大课哦~",Toast.LENGTH_SHORT).show();
+                return PERIOD_DISCONTINUED;
+            }
+        }
+        //检查是否有重复
+        List<Subject> subjectList =LitePal.where("weekday = ?", weekday+"").find(Subject.class);
+        if(subjectList.size()!=0){
+            for (Subject subject:subjectList){
+                //若没有完全错开则必有重合
+                if (!(subject.getEndPeriod()<periods.get(0)||subject.getStartPeriod()>periods.get(periods.size()-1))){
+                    Toast.makeText(AddClassActivity.this, "该节课程的时间与 "+subject.getClass_name()+" 冲突了哦，请检查~", Toast.LENGTH_SHORT).show();
+                    return PERIOD_LAGGED;
+                }
+            }
+        }
+        if(periods.size()==0) {
+            Toast.makeText(AddClassActivity.this, "你还没有选择上课时间哦~", Toast.LENGTH_SHORT).show();
+            return PERIOD_EMPTY;
+        }
+        return PERIOD_OK;
     }
 
     @Override
@@ -248,9 +262,12 @@ public class AddClassActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.save_class:
                 //先读取选择结果
-                for (int i = 0; i < sessions.size(); i++)
+                for (int i = 0; i < sessions.size(); i++) {
+                    //先初始化
+                    sessions.get(i).setLit(false);
                     if (sessionHelper.getLit().get(i).isLit())
                         sessions.get(i).setLit(sessionHelper.getLit().get(i).isLit());
+                }
 
                 //检查输入
                 if (nameText.getText().toString().equals("")) {
@@ -265,8 +282,7 @@ public class AddClassActivity extends AppCompatActivity {
                 } else if (weekdayHelper.isSelected == -1) {
                     Toast.makeText(AddClassActivity.this, "你还没有选择上课日哦~", Toast.LENGTH_SHORT).show();
                     break;
-                } else if (!checkWeekItems(sessions)) {
-                    Toast.makeText(AddClassActivity.this, "你还没有选择上课时间哦~", Toast.LENGTH_SHORT).show();
+                } else if (checkWeekItems(sessions, weekdayHelper.isSelected)!=PERIOD_OK) {
                     break;
                 }
 
@@ -280,14 +296,13 @@ public class AddClassActivity extends AppCompatActivity {
                 for (int i = 0; i < litWeeksList.size(); i++)
                     if (litWeeksList.get(i) != 0) selectedWeeks.add(i + 1);
                 subject.setWeeks(selectedWeeks);
+                subject.setWeekday(weekdayHelper.isSelected);
 
-                for (int i = 0; i < weekdays.size(); i++)
-                    if (weekdays.get(i).isLit())
-                        classItem.setWeekday(Integer.parseInt(weekdays.get(i).getWeekNum()));
-
-                subject.setPeriods(saveSelectedItems(sessions));
+                subject.setStartPeriod(periods.get(0));
+                subject.setEndPeriod(periods.get(periods.size()-1));
                 try {
                     subject.saveThrows();
+                    Toast.makeText(AddClassActivity.this, "添加成功", Toast.LENGTH_SHORT).show();
                 } catch (LitePalSupportException e) {
                     Toast.makeText(AddClassActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
