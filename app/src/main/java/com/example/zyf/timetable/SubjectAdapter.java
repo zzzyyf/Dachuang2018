@@ -21,10 +21,9 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
     Context context;
     List<PopupWindow> popupWindows;
     int pos;
-    int id[];
-    private List<List<Subject>> classList;
-
-    public SubjectAdapter(Context context, List<List<Subject>> classList) {
+    private List<Subject> classList;
+    //TODO: 只读取每周的第一天就结束了
+    public SubjectAdapter(Context context, List<Subject> classList) {
         this.context = context;
         this.classList = classList;
         popupWindows = new ArrayList<>(this.classList.size());
@@ -40,9 +39,8 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder viewHolder, int i) {
-        id = getPosId(i);
-        viewHolder.className.setText(classList.get(id[0]).get(id[1]).getClass_name());
-        viewHolder.classPlace.setText(classList.get(id[0]).get(id[1]).getClass_place());
+        viewHolder.className.setText(classList.get(pos).getClass_name());
+        viewHolder.classPlace.setText(classList.get(pos).getClass_place());
         pos = viewHolder.getAdapterPosition();
         popupWindows.add(pos, new PopupWindow(LayoutInflater.from(context).inflate(R.layout.timetable_menu,
                 (ViewGroup) ((Activity) context).findViewById(android.R.id.content), false), ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -63,13 +61,16 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
 >                * 对选择的课程调用修改课程界面
 >                * （可选）做一个卡片显示选择的课程
                  */
-                id = getPosId(pos);
-                ((TextView) popupWindows.get(pos).getContentView().findViewById(R.id.table_menu_title)).setText(classList.get(id[0]).get(id[1]).getClass_name());
-                ((TextView) popupWindows.get(pos).getContentView().findViewById(R.id.table_menu_content)).setText(DateHelper.weeksToString(classList.get(id[0]).get(id[1]).getWeeks()));
+                ((TextView) popupWindows.get(pos).getContentView().findViewById(R.id.table_menu_title)).setText(classList.get(pos).getClass_name());
+                if(!classList.get(pos).getClass_name().equals("空课")) {
+                    ((TextView) popupWindows.get(pos).getContentView().findViewById(R.id.table_menu_content)).setText(DateHelper.weeksToString(classList.get(pos).getWeeks()));
+                }else{
+                    ((TextView) popupWindows.get(pos).getContentView().findViewById(R.id.table_menu_content)).setText("空课");
+                }
                 popupWindows.get(pos).showAsDropDown(viewHolder.itemView);
             }
         });
-        int span = classList.get(id[0]).get(id[1]).getEndPeriod() - classList.get(id[0]).get(id[1]).getStartPeriod() + 1;
+        int span = classList.get(pos).getEndPeriod() - classList.get(pos).getStartPeriod() + 1;
         viewHolder.className.setPadding(0, dp2px(80) * span / 2 - viewHolder.className.getHeight() - dp2px(1), 0, 0);
         viewHolder.classPlace.setPadding(0, 0, 0, dp2px(80) * span / 2 - viewHolder.classPlace.getHeight() - dp2px(1));
         LayoutParams params = viewHolder.itemView.getLayoutParams();
@@ -83,34 +84,8 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
         return classList.size();
     }
 
-    public void setClassList(List<List<Subject>> classList) {
+    public void setClassList(List<Subject> classList) {
         this.classList = classList;
-    }
-
-    /**
-     * 计算出给定的id是在周几的第几节课
-     *
-     * @param i 给定的id
-     * @return int[2] = {weekday, session}
-     */
-    private int[] getPosId(int i) {
-        //TODO: unfinished
-        int j = 0, pos = 0, num = 0;//pos为在每个子数组中的位置，num为第num个子数组
-        int sum = 0;
-        for (; j < classList.size(); j++) {
-            sum += (classList.get(j).size());
-        }
-        for (j = 0; i >= 0 && j < sum; j++, i--) {
-            num = j % DateHelper.daysPerWeek;
-
-            if (j != 0 && num == 0) pos++;//num不是第一次触发时为0，说明已经把所有子数组中第pos个元素都读取完了。
-            while (num < DateHelper.daysPerWeek && pos >= classList.get(num).size())
-                //已经超过了某天的课程数
-                num++;
-            if (num > classList.size() - 1)
-                num = 0;
-        }
-        return new int[]{num, pos};
     }
 
     private int dp2px(int dpValue) {

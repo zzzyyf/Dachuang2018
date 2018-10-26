@@ -100,7 +100,7 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
         super.onDetach();
     }
 
-    public void initFragment(List<List<Subject>> classList) {
+    public void initFragment(List<Subject> classList) {
         //获取数据
         initWeekList();
         //初始化picker
@@ -164,7 +164,7 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
         Toast.makeText(getContext(), "第 " + position + " 周", Toast.LENGTH_SHORT).show();
         //更新数据
         DateHelper.setSelectedWeek(position);
-        tableAdapter.setClassList(((MainActivity) getActivity()).fillWithEmptyClass(getSelectedWeek()));
+        tableAdapter.setClassList(((MainActivity) getActivity()).getClassListOfWeek( ((MainActivity) getActivity()).fillWithEmptyClass(getSelectedWeek()) ) );
         tableAdapter.notifyDataSetChanged();
     }
 

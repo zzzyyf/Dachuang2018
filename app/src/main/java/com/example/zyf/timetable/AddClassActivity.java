@@ -298,7 +298,7 @@ public class AddClassActivity extends AppCompatActivity {
                 for (int i = 0; i < litWeeksList.size(); i++)
                     if (litWeeksList.get(i) != 0) selectedWeeks.add(i + 1);
                 subject.setWeeks(selectedWeeks);
-                subject.setWeekday(weekdayHelper.isSelected);
+                subject.setWeekday(weekdayHelper.isSelected+1);
                 subject.setStartPeriod(periods.get(0));
                 subject.setEndPeriod(periods.get(periods.size()-1));
                 try {
@@ -309,7 +309,7 @@ public class AddClassActivity extends AppCompatActivity {
                 }
 
                 Intent intent = new Intent();
-                intent.putExtra("weekday", weekdayHelper.isSelected);
+                intent.putExtra("weekday", weekdayHelper.isSelected+1);
                 setResult(RESULT_OK, intent);
                 finish();
             //设置点击toolbar返回按钮的动作
