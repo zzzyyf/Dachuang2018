@@ -56,8 +56,8 @@ public class AddClassActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        nameText = findViewById(R.id.class_name);
-        placeText = findViewById(R.id.class_place);
+        nameText = findViewById(R.id.class_name_text);
+        placeText = findViewById(R.id.class_place_text);
 
         initLit();
         weekText = findViewById(R.id.week_text);
@@ -283,7 +283,8 @@ public class AddClassActivity extends AppCompatActivity {
                 } else if (weekdayHelper.isSelected == -1) {
                     Toast.makeText(AddClassActivity.this, "你还没有选择上课日哦~", Toast.LENGTH_SHORT).show();
                     break;
-                } else if (checkWeekItems(sessions, weekdayHelper.isSelected)!=PERIOD_OK) {
+                    //weekday+1
+                } else if (checkWeekItems(sessions, weekdayHelper.isSelected+1)!=PERIOD_OK) {
                     break;
                 }
 

@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.example.zyf.timetable.TableItemLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="80dp"
+    android:layout_width="wrap_content"
     android:layout_height="80dp"
-    android:layout_margin="2dp"
-    >
+    android:padding="1dp">
 
     <TextView
         android:id="@+id/class_name"
@@ -16,7 +15,6 @@
         app:layout_constraintBottom_toTopOf="@id/class_place"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="packed"
         />
 
@@ -24,12 +22,11 @@
         android:id="@+id/class_place"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAlignment="center"
         android:text="testplace"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/class_name"
-        app:layout_constraintWidth_percent="0.2" />
+        />
 
-</android.support.constraint.ConstraintLayout>
+</com.example.zyf.timetable.TableItemLayout>

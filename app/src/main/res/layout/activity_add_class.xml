@@ -18,7 +18,7 @@
         app:title="添加课程" />
 
     <AutoCompleteTextView
-        android:id="@+id/class_name"
+        android:id="@+id/class_name_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -35,8 +35,8 @@
         android:layout_marginBottom="18dp"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="8dp"
-        android:id="@+id/class_place"
-        app:layout_constraintTop_toBottomOf="@id/class_name"
+        android:id="@+id/class_place_text"
+        app:layout_constraintTop_toBottomOf="@id/class_name_text"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -51,7 +51,7 @@
         android:layout_marginLeft="16dp"
         android:layout_marginRight="8dp"
         android:id="@+id/week_text"
-        app:layout_constraintTop_toBottomOf="@id/class_place"
+        app:layout_constraintTop_toBottomOf="@id/class_place_text"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_width="match_parent"

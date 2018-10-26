@@ -8,6 +8,7 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
@@ -68,6 +69,12 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
                 popupWindows.get(pos).showAsDropDown(viewHolder.itemView);
             }
         });
+        int span = classList.get(id[0]).get(id[1]).getEndPeriod() - classList.get(id[0]).get(id[1]).getStartPeriod() + 1;
+        viewHolder.className.setPadding(0, dp2px(80) * span / 2 - viewHolder.className.getHeight() - dp2px(1), 0, 0);
+        viewHolder.classPlace.setPadding(0, 0, 0, dp2px(80) * span / 2 - viewHolder.classPlace.getHeight() - dp2px(1));
+        LayoutParams params = viewHolder.itemView.getLayoutParams();
+        params.height = dp2px(80) * span;
+        viewHolder.itemView.setLayoutParams(params);
 
     }
 
@@ -106,9 +113,14 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
         return new int[]{num, pos};
     }
 
+    private int dp2px(int dpValue) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpValue, context.getResources().getDisplayMetrics());
+    }
+
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView className;
         TextView classPlace;
+        TextView header, footer;
 
         public ViewHolder(View v) {
             super(v);
@@ -116,4 +128,5 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
             classPlace = v.findViewById(R.id.class_place);
         }
     }
+
 }
