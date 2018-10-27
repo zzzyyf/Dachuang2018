@@ -5,6 +5,8 @@ import android.support.constraint.ConstraintLayout;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 //TODO: 强制设定宽度后居中稍有问题
 public class TableItemLayout extends ConstraintLayout {

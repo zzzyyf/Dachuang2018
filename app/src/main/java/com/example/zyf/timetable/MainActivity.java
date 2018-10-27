@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -190,7 +191,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //TODO: 空间换时间，存储新课的时候就把空课和占位存好
+
+    //TODO: 逻辑未完成，添加课程后无法正常更新和显示
+    //TODO: 实际上应放入总共daysPerWeek*classesPerDay个课，除了底下sum节课以外的其他课按照正常课表中的顺序放入高度为0的占位
     //TODO: 空课不会根据已有课程的更改而更改
+
+    /**
+     * 取出数据库中在指定周的所有课，并添加空课和占位
+     * 占位统一加在课的后面
+     * @param selectedWeek 要取出课的指定周
+     * @return List<List<Subject>> weekClassList 按每天一子数组存储的指定周的课表
+     */
     public List<List<Subject>> fillWithEmptyClass(int selectedWeek) {
         weekClassList = new ArrayList<>(7);
         for (int i=0;i<daysPerWeek;i++)
@@ -198,8 +210,17 @@ public class MainActivity extends AppCompatActivity {
         return weekClassList;
     }
 
+    /**
+     * 取出数据库中在指定周的指定weekday的所有课，并添加空课和占位
+     * 占位统一加在课的后面
+     * @param selectedWeek 要取出课的指定周
+     * @param weekday 要取出课的指定周的指定weekday
+     * @return List<Subject> classList 指定weekday的课表
+     */
     public List<Subject> fillWeekdayWithEmpty(int selectedWeek, int weekday){
         List<Subject> classList = new ArrayList<>();
+        int endOfLastClass=0;//最后一节课结束的小节数
+        //取出数据库中在指定周的指定weekday的所有课
         allClassList = LitePal.order("startperiod asc").find(Subject.class);//按小节的升序读取所有课程
         for (Subject elem : allClassList
                 ) {
@@ -208,34 +229,50 @@ public class MainActivity extends AppCompatActivity {
                 classList.add(elem);//将该节课添加
             }
         }
+        if(classList.size()!=0)endOfLastClass=classList.get(classList.size()-1).getEndPeriod();
 
         List<Integer> period = new ArrayList<>();
         boolean isContinuing = false;//true为在一节空课内
         Subject empty=new Subject();
-        //j:一天中第j小节课；k:classList中第k大节课
+        //j:一天中第j小节课；k:classList中本大节课开始的index
         for (int k = 0,j = 1; j <= classesPerDay; j++) {
             Subject elem;
-            //若j已经过了最后一节有课的课，即后面全是空课
-            if (k> classList.size()-1) {
-                empty = new Subject();
-                empty.setWeekday(weekday);
-                for (;j<=classesPerDay;j++)
-                    period.add(j);
-                empty.setStartPeriod(period.get(0));
-                empty.setEndPeriod(period.get(period.size()-1));
-                empty.setClass_name("空课");
-                classList.add(empty);
-                break;//周i的空课添加完了
-            }
-            //没过的话还得检查j是否在这一节课之前
-            elem = classList.get(k);
-            //若不是在一节空课里，就跳过有课的课
-            while(!isContinuing && j>= elem.getStartPeriod() && j<=elem.getEndPeriod())j++;
-            //现在j要么在有课之前的空课，要么后面全是空课，要么==classesPerDay+1
-            if(j==classesPerDay+1)break;//周i的空课添加完了
+            if (!isContinuing) {
+                //若j已经过了最后一节有课的课，即后面全是空课，此时k==size()
+                if (j > endOfLastClass-1 ) {
+                    empty = new Subject();
+                    empty.setWeekday(weekday);
+                    for (; j <= classesPerDay; j++)
+                        period.add(j);
+                    empty.setStartPeriod(period.get(0));
+                    empty.setEndPeriod(period.get(period.size() - 1));
+                    empty.setClass_name("空课");
+                    classList.add(k, empty);
+                    for (int l = empty.getStartPeriod(); l < empty.getEndPeriod(); l++)
+                        classList.add(k + 1, new Subject());//若课长为n小节，则需在课后添加n-1小节的占位
+                    return classList;//周i的空课添加完了
+                }
+                //后面还有课的话还得检查j是否在这一节课之前
+                //为之后连续的n节课或1节课添加占位
 
-            //若j及后面全是空课
-            if(j>elem.getEndPeriod()) {
+                do {
+                    elem = classList.get(k);
+                    //若不是在一节空课里，就给下一节课占位
+                    while (!isContinuing && j >= elem.getStartPeriod() && j <= elem.getEndPeriod()) {
+                        if (j < elem.getEndPeriod()) {
+                            classList.add(++k, new Subject());//给已有的课后添加占位
+                        }
+                        j++;
+                    }
+                    k++;//让k指向下一节课
+                    //现在j要么是在一节跟上一节连续的课，要么在有课之前的空课，要么后面全是空课，要么==classesPerDay+1
+                    if (j == classesPerDay + 1) return classList;//周i的空课添加完了
+                }
+                while (k < classList.size() && j == classList.get(k).getStartPeriod());//若j在一节跟上一节连续的课就继续
+            }
+            //现在j要么在有课之前的空课，要么后面全是空课
+            if(j>endOfLastClass) {
+                //若j及后面全是空课
                 empty = new Subject();
                 empty.setWeekday(weekday);
                 for (; j <= classesPerDay; j++)
@@ -243,9 +280,11 @@ public class MainActivity extends AppCompatActivity {
                 empty.setStartPeriod(period.get(0));
                 empty.setEndPeriod(period.get(period.size()-1));
                 empty.setClass_name("空课");
-                classList.add(empty);
-                break;//周i的空课添加完了
+                classList.add(k, empty);
+                for (int l=empty.getStartPeriod();l<empty.getEndPeriod();l++) classList.add(k+1,new Subject());//若课长为n小节，则需在课后添加n-1小节的占位
+                return classList;//周i的空课添加完了
             } else{
+                //这节空课后面还有课
                 //如果不连续说明刚刚出现空课
                 if (!isContinuing) {
                     //初始化空课
@@ -255,15 +294,18 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     period.add(j);
                 }
-                if(j==elem.getStartPeriod()-1) {
+                if(j==classList.get(k).getStartPeriod()-1) {
                     //若执行到一节课之前说明该节空课添加完了
                     empty.setWeekday(weekday);
                     empty.setStartPeriod(period.get(0));
                     empty.setEndPeriod(period.get(period.size()-1));
                     empty.setClass_name("空课");
-                    classList.add(k, empty);//先在本节课之前添加空课再把课+1
-                    k++;
-                    period.clear();
+                    classList.add(k, empty);//空课应加在k之前
+                    for (int l=empty.getStartPeriod();l<empty.getEndPeriod();l++) {
+                        classList.add(++k, new Subject());//若课长为l小节，则需在课后添加l-1小节的占位
+                    }
+                        k++;//让k指向下一节课
+                        period.clear();
                     isContinuing=false;
                 }
             }
@@ -272,28 +314,13 @@ public class MainActivity extends AppCompatActivity {
 
         return classList;
     }
-    //TODO: 逻辑未完成，添加课程后无法正常更新和显示
-    //TODO: 实际上应放入总共daysPerWeek*classesPerDay个课，除了底下sum节课以外的其他课按照正常课表中的顺序放入高度为0的占位，然后采用StaggeredGridLayoutManager.
+
     //按依次从每天的课表中取出一节课的顺序把当周所有课放入一个列表
     public List<Subject> getClassListOfWeek(List<List<Subject>> weekClassList){
         List<Subject> allOfWeekList = new ArrayList<>();
-        int j = 0, pos = 0, num = 0;//pos为在每个子数组中的位置，num为第num个子数组
-        int sum = 0;
-        for (; j < weekClassList.size(); j++) {
-            sum += (weekClassList.get(j).size());
+        for (int j=0; j<classesPerDay;j++){
+            for (int i=0; i<daysPerWeek;i++) allOfWeekList.add(weekClassList.get(i).get(j));
         }
-        for (j = 0; j < sum; j++) {
-            num = j % DateHelper.daysPerWeek;
-
-            if (j != 0 && num == 0) pos++;//num不是第一次触发时为0，说明已经把所有子数组中第pos个元素都读取完了。
-            while (num < DateHelper.daysPerWeek && pos >= weekClassList.get(num).size())
-                //已经超过了某天的课程数
-                num++;
-            if (num > weekClassList.size() - 1)
-                num = 0;
-            allOfWeekList.add(weekClassList.get(num).get(pos));
-        }
-
         return allOfWeekList;
     }
 }

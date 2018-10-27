@@ -9,6 +9,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.LinearSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SnapHelper;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,7 +33,7 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
     RecyclerView tableView;
     RecyclerView picker;
     LinearLayoutManager linearManager;
-    GridLayoutManager tableManager;
+    StaggeredGridLayoutManager tableManager;
     SnapHelper snapHelper;
     SubjectAdapter tableAdapter;
     PickerAdapterWrapper wrapper;
@@ -144,7 +145,7 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
 
 
         //初始化tableView
-        tableManager = new GridLayoutManager(getActivity(), daysPerWeek, LinearLayoutManager.VERTICAL, false);
+        tableManager = new StaggeredGridLayoutManager(daysPerWeek, LinearLayoutManager.VERTICAL);
         tableView.setLayoutManager(tableManager);
         tableAdapter = new SubjectAdapter(getContext(), classList);
         tableView.setAdapter(tableAdapter);

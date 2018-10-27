@@ -26,7 +26,7 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
     public SubjectAdapter(Context context, List<Subject> classList) {
         this.context = context;
         this.classList = classList;
-        popupWindows = new ArrayList<>(this.classList.size());
+        popupWindows = new ArrayList<>(classList.size());
 
     }
 
@@ -62,7 +62,7 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
 >                * （可选）做一个卡片显示选择的课程
                  */
                 ((TextView) popupWindows.get(pos).getContentView().findViewById(R.id.table_menu_title)).setText(classList.get(pos).getClass_name());
-                if(!classList.get(pos).getClass_name().equals("空课")) {
+                if(classList.get(pos).getClass_name()!=null && !classList.get(pos).getClass_name().equals("空课")) {
                     ((TextView) popupWindows.get(pos).getContentView().findViewById(R.id.table_menu_content)).setText(DateHelper.weeksToString(classList.get(pos).getWeeks()));
                 }else{
                     ((TextView) popupWindows.get(pos).getContentView().findViewById(R.id.table_menu_content)).setText("空课");
@@ -95,7 +95,6 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView className;
         TextView classPlace;
-        TextView header, footer;
 
         public ViewHolder(View v) {
             super(v);

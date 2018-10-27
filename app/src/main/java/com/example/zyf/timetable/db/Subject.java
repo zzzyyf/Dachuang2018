@@ -24,11 +24,11 @@ public class Subject extends LitePalSupport {
     /**
      * 本节课开始的节数,1为第一节
      */
-    private int startPeriod;
+    private int startPeriod=0;
     /**
      * 本节课结束的节数，1为第一节
      */
-    private int endPeriod;
+    private int endPeriod=-1;
 
     public String getClass_name() {
         return class_name;
