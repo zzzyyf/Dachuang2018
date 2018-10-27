@@ -1,36 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.example.zyf.timetable.TableItemLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+
     android:layout_width="wrap_content"
     android:layout_height="80dp"
-    android:padding="1dp"
     android:orientation="vertical"
+    android:background="@drawable/table_item_bg"
+    android:focusableInTouchMode="true"
     >
 
     <TextView
         android:id="@+id/class_name"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:text="testname"
         android:textAlignment="center"
-        android:paddingBottom="0dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/class_place"
         android:layout_gravity="center_horizontal"
-        app:layout_constraintVertical_chainStyle="packed"
+        android:gravity="bottom"
+        android:layout_weight="1"
+        android:minHeight="10sp"
+        android:minLines="1"
         />
 
     <TextView
         android:id="@+id/class_place"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:text="testplace"
         android:textAlignment="center"
-        android:paddingTop="0dp"
-        app:layout_constraintTop_toBottomOf="@id/class_name"
         android:layout_gravity="center_horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:gravity="top"
+        android:layout_weight="1"
+        android:minHeight="10sp"
+        android:minLines="1"
         />
 
 </com.example.zyf.timetable.TableItemLayout>
