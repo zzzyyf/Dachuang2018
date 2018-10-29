@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/editevent"
+        android:title="修改此事件"/>
+    <item
+        android:id="@+id/deleteevent"
+        android:title="删除此事件"/>
+
+</menu>

@@ -21,7 +21,7 @@ import java.util.List;
 public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHolder> {
     Context context;
     List<PopupWindow> popupWindows;
-    int pos;
+    int pos,a;
     private List<Subject> classList;
     //TODO: 为每个格子随机选取给定的颜色
     public SubjectAdapter(Context context, List<Subject> classList) {
@@ -38,11 +38,20 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
         return new ViewHolder(v);
     }
 
+    //TODO: 宽度需动态改变才能居中，居中只能在设置文本之后，设置宽度后会发生文本跳动
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder viewHolder, int i) {
-        viewHolder.className.setText(classList.get(i).getClass_name());
-        viewHolder.classPlace.setText(classList.get(i).getClass_place());
         pos = viewHolder.getAdapterPosition();
+        viewHolder.className.setText(classList.get(a).getClass_name());
+        viewHolder.classPlace.setText(classList.get(a).getClass_place());
+        viewHolder.itemView.post(new Runnable() {
+            @Override
+            public void run() {
+                viewHolder.className.setWidth(viewHolder.itemView.getWidth());
+                viewHolder.classPlace.setWidth(viewHolder.itemView.getWidth());
+            }
+        });
+
         popupWindows.add(pos, new PopupWindow(LayoutInflater.from(context).inflate(R.layout.timetable_menu,
                 (ViewGroup) ((Activity) context).findViewById(android.R.id.content), false), ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         popupWindows.get(pos).setBackgroundDrawable(context.getDrawable(R.drawable.table_menu_bg));
@@ -66,7 +75,7 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
                     viewHolder.itemView.setElevation(dp2px(8));
                     pos = viewHolder.getAdapterPosition();
                     ((TextView) popupWindows.get(pos).getContentView().findViewById(R.id.table_menu_title)).setText(classList.get(pos).getClass_name());
-                    if(classList.get(pos).getClass_name()!=null && !classList.get(pos).getClass_name().equals("空课")) {
+                    if(classList.get(pos).getClass_name()!=null) {
                         ((TextView) popupWindows.get(pos).getContentView().findViewById(R.id.table_menu_content)).setText(DateHelper.weeksToString(classList.get(pos).getWeeks()));
                     }else{
                         ((TextView) popupWindows.get(pos).getContentView().findViewById(R.id.table_menu_content)).setText("空课");

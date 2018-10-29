@@ -10,28 +10,20 @@
 
     <TextView
         android:id="@+id/class_name"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:text="testname"
-        android:textAlignment="center"
-        android:layout_gravity="center_horizontal"
-        android:gravity="bottom"
+        android:gravity="bottom|center_horizontal"
         android:layout_weight="1"
-        android:minHeight="10sp"
-        android:minLines="1"
         />
 
     <TextView
         android:id="@+id/class_place"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:text="testplace"
-        android:textAlignment="center"
-        android:layout_gravity="center_horizontal"
-        android:gravity="top"
+        android:gravity="top|center_horizontal"
         android:layout_weight="1"
-        android:minHeight="10sp"
-        android:minLines="1"
         />
 
 </com.example.zyf.timetable.TableItemLayout>

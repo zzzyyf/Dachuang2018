@@ -4,10 +4,8 @@ import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,18 +17,21 @@ import com.example.zyf.timetable.db.WeekSettings;
 
 import org.litepal.LitePal;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import static com.example.zyf.timetable.DateHelper.*;
+import static com.example.zyf.timetable.DateHelper.getSelectedWeek;
+import static com.example.zyf.timetable.DateHelper.initWeekList;
+import static com.example.zyf.timetable.DateHelper.selectedWeek;
+import static com.example.zyf.timetable.DateHelper.setDate;
 
 public class MainActivity extends AppCompatActivity {
+    final int HOME_FRAGMENT = 0, TIMETABLE_FRAGMENT = 1, EVENT_FRAGMENT = 2, PLAN_FRAGMENT = 3;
+    final int ADD_SUBJECT = 10, ADD_EVENT = 20, ADD_PLAN = 30, SET_SEMESTER = 40;
     List<Subject> allClassList;
     List<List<Subject>> weekClassList;
-    Fragment[] fragments;
+    Fragment fragment;
     Toolbar toolbar;
-    TextInputLayout startDateText, endDateText, classPDayText;
+    int selectedFragment = 0;//0-HomeFragment, 1-TimeTableFragment, 2-EventFragment, 3-PlanFragment
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,16 +53,34 @@ public class MainActivity extends AppCompatActivity {
             DateHelper.readFromDb(weekSettings);
         initWeekList();
         setDate();
-        fillWithEmptyClass(currentWeek);
 
-        //初始化各片段
-        fragments = new Fragment[4];
+        //初始化初始片段
         //防止旋转屏幕时Fragment重复加载
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, TimeTableFragment.newInstance("1", "2"), "Timetable")
-                    .commit();
+        if (savedInstanceState != null) {
+            selectedFragment = savedInstanceState.getInt("selectedFragment", HOME_FRAGMENT);
         }
+        switch (selectedFragment) {
+            case HOME_FRAGMENT:
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.container, new HomeFragment(), "Home")
+                        .commit();
+                break;
+            case TIMETABLE_FRAGMENT:
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.container, TimeTableFragment.newInstance("param1", "param2"), "Timetable")
+                        .commit();
+                break;
+            case EVENT_FRAGMENT:
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.container, new EventFragment(), "Event")
+                        .commit();
+                break;
+            case PLAN_FRAGMENT:
+                //TODO: PlanFragment unfinished
+            default:
+        }
+
+
         //TODO: 旋转屏幕时刷新recyclerview
 
         //初始化BottomNaviBar
@@ -71,22 +90,37 @@ public class MainActivity extends AppCompatActivity {
                 .addItem(new BottomNavigationItem(R.drawable.table, "课程表"))
                 .addItem(new BottomNavigationItem(R.drawable.plan_list, "计划"))
                 .addItem(new BottomNavigationItem(R.drawable.event_list, "事件"))
-                .setFirstSelectedPosition(1)
+                .setFirstSelectedPosition(selectedFragment)
                 .initialise();
         naviBar.setTabSelectedListener(new BottomNavigationBar.OnTabSelectedListener() {
             @Override
             public void onTabSelected(int position) {
                 switch (position) {
+                    case 0:
+                        //选择“主页”
+                        fragment = new HomeFragment();
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.container, fragment, "Home")
+                                .commit();
+                        break;
                     case 1:
                         //选择“课程表”
-
+                        fragment = TimeTableFragment.newInstance("1", "2");
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.container, fragment, "Timetable")
+                                .commit();
                         break;
                     case 2:
                         //选择“计划”
+                        fragment = new EventFragment();
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.container, fragment, "Event")
+                                .commit();
                     case 3:
                         //选择“事件”
                     default:
                 }
+                selectedFragment = position;
             }
 
             @Override
@@ -102,22 +136,29 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (fragments[1] == null) {
-            fragments[1] = getSupportFragmentManager().findFragmentById(R.id.container);
-            ((TimeTableFragment) fragments[1]).initFragment(getClassListOfWeek(weekClassList));
-
-            //set initial position of picker
-            if (isWeekSet) {
-                ((TimeTableFragment) fragments[1]).picker.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        //直接传入adapterPosition即周数即可
-                        //TODO: 偶尔会报错Fragment not attached to a context.
-                        ((TimeTableFragment) fragments[1]).scrollToPosition(currentWeek);
-
-                    }
-                });
-            }
+        if (fragment == null) {
+            fragment = getSupportFragmentManager().findFragmentById(R.id.container);
+        }
+        //此处初始化fragment
+        switch (selectedFragment) {
+            case HOME_FRAGMENT:
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.container, new HomeFragment(), "Home")
+                        .commit();
+                break;
+            case TIMETABLE_FRAGMENT:
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.container, fragment, "Timetable")
+                        .commit();
+                break;
+            case EVENT_FRAGMENT:
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.container, new EventFragment(), "Event")
+                        .commit();
+                break;
+            case PLAN_FRAGMENT:
+                //TODO: PlanFragment unfinished
+            default:
         }
     }
 
@@ -134,10 +175,10 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.add_class:
                 //点击添加课程按钮
-                startActivityForResult(new Intent(MainActivity.this, AddClassActivity.class), 1);
+                startActivityForResult(new Intent(MainActivity.this, AddClassActivity.class), ADD_SUBJECT);
                 break;
             case R.id.set_table_item:
-                startActivityForResult(new Intent(MainActivity.this, SetSemesterActivity.class), 2);
+                startActivityForResult(new Intent(MainActivity.this, SetSemesterActivity.class), SET_SEMESTER);
                 //点击课表设置按钮
                 break;
             default:
@@ -145,25 +186,30 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * 当从添加/更改的Activity返回时更新对应的更改
+     *
+     * @param requestCode 进行的操作
+     * @param resultCode  是否做了更改，RESULT_OK为做了更改，RESULT_CANCELLED为更改取消了
+     * @param data        返回Intent，内含辅助用数据
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         switch (requestCode) {
-            case 1:
+            case ADD_SUBJECT:
                 if (resultCode == RESULT_OK) {
                     //若当前显示的碎片不是Timetable
                     if (!(getSupportFragmentManager().findFragmentById(R.id.container) instanceof TimeTableFragment)) {
                         //把当前显示的碎片替换为Timetable
+                        fragment = TimeTableFragment.newInstance("1", "2");
                         getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.container, TimeTableFragment.newInstance("1", "2"), "Timetable")
+                                .replace(R.id.container, fragment, "Timetable")
                                 .commit();
                     }
-                    //更新数据
-                    allClassList = LitePal.order("startperiod asc").find(Subject.class);//按小节的升序读取所有课程
+                    //只需部分更新即可
                     int weekday = data.getIntExtra("weekday", 1);
-                    if(LitePal.findLast(Subject.class).getWeeks().contains(getSelectedWeek())) {
-                        weekClassList.set(weekday-1, fillWeekdayWithEmpty(getSelectedWeek(), weekday));
-                        ((TimeTableFragment) getSupportFragmentManager().findFragmentById(R.id.container)).tableAdapter.setClassList(getClassListOfWeek(weekClassList));
-                        ((TimeTableFragment) getSupportFragmentManager().findFragmentById(R.id.container)).tableAdapter.notifyDataSetChanged();
+                    if (LitePal.findLast(Subject.class).getWeeks().contains(getSelectedWeek())) {
+                        ((TimeTableFragment) fragment).partialUpdateTableList(weekday);
                     }
                 } else {
                     if (!(getSupportFragmentManager().findFragmentById(R.id.container) instanceof TimeTableFragment)) {
@@ -174,98 +220,28 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 break;
-            case 2:
+            case SET_SEMESTER:
                 if (resultCode == RESULT_OK) {
                     initWeekList();
                     //若当前显示的碎片不是Timetable
                     if (!(getSupportFragmentManager().findFragmentById(R.id.container) instanceof TimeTableFragment)) {
                         //把当前显示的碎片替换为Timetable
+                        fragment = TimeTableFragment.newInstance("1", "2");
                         getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.container, TimeTableFragment.newInstance("1", "2"), "Timetable")
+                                .replace(R.id.container, fragment, "Timetable")
                                 .commit();
                     }
                     //更新数据
-                    ((TimeTableFragment) getSupportFragmentManager().findFragmentById(R.id.container)).wrapper.notifyDataSetChanged();
+                    ((TimeTableFragment) fragment).wrapper.notifyDataSetChanged();
+                    ((TimeTableFragment) fragment).updateEntireTableList(selectedWeek, false);
                 }
             default:
         }
     }
 
-    //TODO: 空间换时间，存储新课的时候就把空课和占位存好
-
-    /**
-     * 取出数据库中在指定周的所有课，并添加空课和占位
-     * 占位统一加在课的后面
-     * @param selectedWeek 要取出课的指定周
-     * @return List<List<Subject>> weekClassList 按每天一子数组存储的指定周的课表
-     */
-    public List<List<Subject>> fillWithEmptyClass(int selectedWeek) {
-        weekClassList = new ArrayList<>(7);
-        for (int i=0;i<daysPerWeek;i++)
-            weekClassList.add(i, fillWeekdayWithEmpty(selectedWeek, i+1));
-        return weekClassList;
-    }
-
-    /**
-     * 取出数据库中在指定周的指定weekday的所有课，并添加空课和占位
-     * 占位统一加在课的后面
-     * @param selectedWeek 要取出课的指定周
-     * @param weekday 要取出课的指定周的指定weekday
-     * @return List<Subject> classList 指定weekday的课表
-     */
-    public List<Subject> fillWeekdayWithEmpty(int selectedWeek, int weekday){
-        boolean isContinuing=false;
-        int startEmpty=0;
-        int startClass=0, endClass=classesPerDay+1;
-        Subject[] subjects = new Subject[classesPerDay];
-        //初始化
-        for (int i=0;i<classesPerDay;i++){
-            subjects[i] = new Subject();
-        }
-
-        //取出数据库中在指定周的指定weekday的所有课
-        allClassList = LitePal.order("startperiod asc").find(Subject.class);//按小节的升序读取所有课程
-        for (Subject elem : allClassList
-                ) {
-            //如果某节课在本周
-            if (elem.getWeeks().contains(selectedWeek) && elem.getWeekday()==weekday) {
-                subjects[elem.getStartPeriod()-1]=elem;//将该节课添加至开始处
-            }
-        }
-
-        Subject empty = new Subject();
-        for (int i=0;i<classesPerDay;i++){
-            //遇到课就记下起止节
-            if (subjects[i].getClass_name()!=null){
-                startClass = subjects[i].getStartPeriod()-1;
-                endClass = subjects[i].getEndPeriod()-1;
-            }
-            //第一次遇到不在上一节课起止节内的课才是空课的开始
-            //若endclass为classesPerDay+1则说明未遇到过课
-            if(!isContinuing && (endClass==classesPerDay+1 || i<startClass || i>endClass) && subjects[i].getClass_name()==null){
-                startEmpty=i;
-                empty = new Subject();
-                empty.setWeekday(weekday);
-                empty.setClass_name("空课");
-                empty.setStartPeriod(i+1);
-                isContinuing=true;
-            }else if (isContinuing && subjects[i].getClass_name() != null || i == classesPerDay - 1){
-                //连续的空课突然中断或者到了末尾还没中断
-                empty.setEndPeriod(i);
-                if(i==classesPerDay-1)empty.setEndPeriod(i+1);
-                subjects[startEmpty]=empty;
-                isContinuing=false;
-            }
-        }
-        return new ArrayList<>(Arrays.asList(subjects));
-    }
-
-    //按依次从每天的课表中取出一节课的顺序把当周所有课放入一个列表
-    public List<Subject> getClassListOfWeek(List<List<Subject>> weekClassList){
-        List<Subject> allOfWeekList = new ArrayList<>();
-        for (int j=0; j<classesPerDay;j++){
-            for (int i=0; i<daysPerWeek;i++) allOfWeekList.add(weekClassList.get(i).get(j));
-        }
-        return allOfWeekList;
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putInt("selectedFragment", selectedFragment);
+        super.onSaveInstanceState(outState);
     }
 }

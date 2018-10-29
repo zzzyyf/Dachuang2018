@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.LinearSnapHelper;
 import android.support.v7.widget.RecyclerView;
@@ -16,10 +15,13 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.example.zyf.timetable.db.Subject;
+
+import org.litepal.LitePal;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import static com.example.zyf.timetable.DateHelper.*;
-
-
 
 /**
  * A simple {@link Fragment} subclass.
@@ -42,7 +44,8 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
     int position;
     private String mParam1;
     private String mParam2;
-
+    List<Subject> tableList;
+    List<List<Subject>> weekClassList;
 
     public TimeTableFragment() {
         // Required empty public constructor
@@ -87,21 +90,11 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
 
         //初始化RecyclerViews
         tableView = view.findViewById(R.id.table_view);
+        initFragment();
         return view;
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-    }
-
-    public void initFragment(List<Subject> classList) {
+    public void initFragment() {
         //获取数据
         initWeekList();
         //初始化picker
@@ -118,7 +111,6 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
-                int firstPosition;
                 switch(newState){
                     case RecyclerView.SCROLL_STATE_SETTLING:
                         if (!isDragging && !isScrolling){
@@ -132,8 +124,9 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
                         if (!isDragging && isScrolling){
                             isDragging = false;
                             isScrolling = false;
-                            PickerHelper.changeWeekNumHighlight(
-                                    ((PickerAdapter.ViewHolder)picker.findViewHolderForAdapterPosition(position)).weekNum);  //由于滚动事件会多次触发IDLE状态，我们只需要在第一次IDLE被触发时获取ItemView。
+                            //PickerHelper.changeWeekNumHighlight(
+                                    //((PickerAdapter.ViewHolder)picker.findViewHolderForAdapterPosition(position)).weekNum);  //由于滚动事件会多次触发IDLE状态，我们只需要在第一次IDLE被触发时获取ItemView。
+                            PickerHelper.changeWeekNumHighlight((TextView) ((ViewGroup)snapHelper.findSnapView(linearManager)).getChildAt(0));
                         }
                         break;
                 }
@@ -143,12 +136,26 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
         snapHelper = new LinearSnapHelper();
         snapHelper.attachToRecyclerView(picker);
 
+        //set initial position of picker
+        if (isWeekSet) {
+            picker.post(new Runnable() {
+                @Override
+                public void run() {
+                    //直接传入adapterPosition即周数即可
+                    scrollToPosition(currentWeek);
+                }
+            });
+        }
+        //初始化tableView的数据
+        updateEntireTableList(currentWeek, true);
 
         //初始化tableView
         tableManager = new StaggeredGridLayoutManager(daysPerWeek, LinearLayoutManager.VERTICAL);
         tableView.setLayoutManager(tableManager);
-        tableAdapter = new SubjectAdapter(getContext(), classList);
+        tableAdapter = new SubjectAdapter(getContext(), tableList);
         tableView.setAdapter(tableAdapter);
+
+
     }
 
     /**
@@ -165,7 +172,7 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
         Toast.makeText(getContext(), "第 " + position + " 周", Toast.LENGTH_SHORT).show();
         //更新数据
         DateHelper.setSelectedWeek(position);
-        tableAdapter.setClassList(((MainActivity) getActivity()).getClassListOfWeek( ((MainActivity) getActivity()).fillWithEmptyClass(getSelectedWeek()) ) );
+        tableAdapter.setClassList(getClassListOfWeek(fillWithEmptyClass(getSelectedWeek())));
         tableAdapter.notifyDataSetChanged();
     }
 
@@ -202,9 +209,105 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
 
     }
 
+    //TODO: 空间换时间，存储新课的时候就把空课和占位存好
+
+    /**
+     * 取出数据库中在指定周的所有课，并添加空课和占位
+     * 占位统一加在课的后面
+     * @param selectedWeek 要取出课的指定周
+     * @return List<List<Subject>> weekClassList 按每天一子数组存储的指定周的课表
+     */
+    public List<List<Subject>> fillWithEmptyClass(int selectedWeek) {
+        weekClassList = new ArrayList<>();
+        for (int i=0;i<daysPerWeek;i++)
+            weekClassList.add(i, fillWeekdayWithEmpty(selectedWeek, i+1));
+        return weekClassList;
+    }
+
+    /**
+     * 取出数据库中在指定周的指定weekday的所有课，并添加空课和占位
+     * 占位统一加在课的后面
+     * @param selectedWeek 要取出课的指定周
+     * @param weekday 要取出课的指定周的指定weekday
+     * @return List<Subject> classList 指定weekday的课表
+     */
+    public List<Subject> fillWeekdayWithEmpty(int selectedWeek, int weekday){
+        boolean isContinuing=false;
+        int startEmpty=0;
+        int startClass=0, endClass=classesPerDay+1;
+        boolean isEmptyStart=true;
+        Subject[] subjects = new Subject[classesPerDay];
+        //初始化
+        for (int i=0;i<classesPerDay;i++){
+            subjects[i] = new Subject();
+        }
+
+        //取出数据库中在指定周的指定weekday的所有课
+        List<Subject> allClassList = LitePal.order("startperiod asc").find(Subject.class);//按小节的升序读取所有课程
+        for (Subject elem : allClassList
+                ) {
+            //如果某节课在本周
+            if (elem.getWeeks().contains(selectedWeek) && elem.getWeekday()==weekday) {
+                subjects[elem.getStartPeriod()-1]=elem;//将该节课添加至开始处
+            }
+        }
+
+        Subject empty = new Subject();
+        for (int i=0;i<classesPerDay;i++){
+            //遇到课就记下起止节
+            if (subjects[i].getClass_name()!=null){
+                startClass = subjects[i].getStartPeriod()-1;//课的开始处的index
+                endClass = subjects[i].getEndPeriod()-1;//课的结束处的index
+                isEmptyStart=false;
+            }
+            //第一节课为空或过了记录的一节课末尾发现是空的时候是空课的开始，若最后一节是空课的开始则也是空课的结束
+            if(!isContinuing && (i==0 || i==endClass+1) && subjects[i].getClass_name()==null){
+                startEmpty=i;
+                empty = new Subject();
+                empty.setWeekday(weekday);
+                empty.setClass_name("空课");
+                empty.setStartPeriod(i+1);
+                if (i==classesPerDay-1){
+                    empty.setEndPeriod(i+1);
+                    subjects[startEmpty]=empty;
+                    break;
+                }
+                isContinuing=true;
+            }else if (isContinuing && subjects[i].getClass_name() != null || isContinuing && i == classesPerDay - 1){
+                //连续的空课突然中断或者到了末尾还没中断
+                empty.setEndPeriod(i);
+                if(i==classesPerDay-1)empty.setEndPeriod(i+1);
+                subjects[startEmpty]=empty;
+                isContinuing=false;
+            }
+        }
+        return new ArrayList<>(Arrays.asList(subjects));
+    }
+
+    //按依次从每天的课表中取出一节课的顺序把当周所有课放入一个列表
+    public List<Subject> getClassListOfWeek(List<List<Subject>> weekClassList){
+        tableList = new ArrayList<>();
+        for (int j=0; j<classesPerDay;j++){
+            for (int i=0; i<daysPerWeek;i++) tableList.add(weekClassList.get(i).get(j));
+        }
+        return tableList;
+    }
+
     @Override
     public void onDestroy() {
         PickerHelper.freeTextView();
         super.onDestroy();
+    }
+
+    public void partialUpdateTableList(int weekday){
+        weekClassList.set(weekday-1, fillWeekdayWithEmpty(selectedWeek, weekday));
+        getClassListOfWeek(weekClassList);
+        tableAdapter.notifyDataSetChanged();
+    }
+
+    public void updateEntireTableList(int week, boolean isFirst){
+        tableList = getClassListOfWeek(fillWithEmptyClass(week));
+        if (!isFirst)
+            tableAdapter.notifyDataSetChanged();
     }
 }
