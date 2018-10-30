@@ -301,7 +301,7 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
 
     public void partialUpdateTableList(int weekday){
         weekClassList.set(weekday-1, fillWeekdayWithEmpty(selectedWeek, weekday));
-        getClassListOfWeek(weekClassList);
+        tableList = getClassListOfWeek(weekClassList);
         tableAdapter.notifyDataSetChanged();
     }
 

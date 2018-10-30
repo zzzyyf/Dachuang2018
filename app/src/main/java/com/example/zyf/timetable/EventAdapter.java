@@ -14,57 +14,37 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import com.example.zyf.timetable.db.Event;
-
 import org.litepal.LitePal;
 
 import java.util.List;
 
-public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder>{
+public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> {
 
     private List<EventItem> mEventList;
 
     private Resources mResource;
     private Context mContext;
 
-    static class ViewHolder extends RecyclerView.ViewHolder{
-
-        View eventView;
-        TextView eventListName;
-        TextView eventListDate;
-        TextView eventListLeftDay;
-        TextView eventListNote;
-        public ViewHolder(@NonNull View itemView) {
-            super(itemView);
-            eventView=itemView;
-            eventListName =itemView.findViewById(R.id.eventitemname);
-            eventListDate=itemView.findViewById(R.id.eventitemdate);
-            eventListLeftDay =itemView.findViewById(R.id.eventitemleftday);
-            eventListNote =itemView.findViewById(R.id.eventitemnote);
-        }
-    }
-    public EventAdapter(List<EventItem> eventList,Context context){
-        mEventList=eventList;
-        mContext=context;
+    public EventAdapter(List<EventItem> eventList, Context context) {
+        mEventList = eventList;
+        mContext = context;
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull final ViewGroup viewGroup, int i) {
-        final View view= LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.event_item,viewGroup,false);
-        final ViewHolder holder=new ViewHolder(view);
-
+        final View view = LayoutInflater.from(viewGroup.getContext())
+                .inflate(R.layout.event_item, viewGroup, false);
+        final ViewHolder holder = new ViewHolder(view);
         return holder;
     }
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder viewHolder, int i) {
-        final EventItem eventItem =mEventList.get(i);
-        final long a=eventItem.getId();
+        final EventItem eventItem = mEventList.get(i);
+        final long a = eventItem.getId();
         //设置单元格格式
-        //mResource = (Resources)getBaseContext().getResources();
-        //mContext
-        switch (eventItem.getEventlistcolor()){
+        switch (eventItem.getEventlistcolor()) {
             case 0:
                 viewHolder.eventListName.setTextColor(mContext.getResources().getColor(R.color.darkorchid));
                 break;
@@ -90,19 +70,14 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder>{
 
         viewHolder.eventListName.setText(eventItem.getEventlistname());
         viewHolder.eventListDate.setText(eventItem.getEventlistdate());
-        viewHolder.eventListLeftDay.setText(eventItem.getLeftday()+"");
+        viewHolder.eventListLeftDay.setText(eventItem.getLeftday() + "");
         viewHolder.eventListNote.setText(eventItem.getEventlistnote());
 
         //viewHolder.itemView.setTag(i);
         viewHolder.eventView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-
-//                //显示点击了什么
-//                int position=holder.getAdapterPosition();
-//                Eventlist eventlist=mEventlist.get(position);
-//                Toast.makeText(v.getContext(),"点击了"+eventlist.getEventlistname(),Toast.LENGTH_SHORT).show();
+                //显示点击了什么
                 PopupMenu popupMenu=new PopupMenu(mContext,v);
                 popupMenu.getMenuInflater().inflate(R.menu.event_item_menu,popupMenu.getMenu());
                 popupMenu.show();
@@ -110,17 +85,9 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder>{
                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
-
                         switch (item.getItemId()){
                             case R.id.editevent:
-                                //List <String>
-                                //Toast.makeText(mContext,"1",Toast.LENGTH_SHORT).show();
-
                                 Intent intent=new Intent(mContext,EditEventActivity.class);
-                                //String data="emmm";
-                                //传参
-                                //Bundle bundle=new bundle();
-
                                 intent.putExtra("data",eventItem.getId());
                                 ((Activity)mContext).startActivity(intent);
                                 break;
@@ -143,5 +110,23 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder>{
     @Override
     public int getItemCount() {
         return mEventList.size();
+    }
+
+    static class ViewHolder extends RecyclerView.ViewHolder {
+
+        View eventView;
+        TextView eventListName;
+        TextView eventListDate;
+        TextView eventListLeftDay;
+        TextView eventListNote;
+
+        public ViewHolder(@NonNull View itemView) {
+            super(itemView);
+            eventView = itemView;
+            eventListName = itemView.findViewById(R.id.eventitemname);
+            eventListDate = itemView.findViewById(R.id.eventitemdate);
+            eventListLeftDay = itemView.findViewById(R.id.eventitemleftday);
+            eventListNote = itemView.findViewById(R.id.eventitemnote);
+        }
     }
 }

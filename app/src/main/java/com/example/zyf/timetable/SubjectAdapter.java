@@ -38,17 +38,21 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
         return new ViewHolder(v);
     }
 
-    //TODO: 宽度需动态改变才能居中，居中只能在设置文本之后，设置宽度后会发生文本跳动
+    //TODO: 宽度需动态改变才能居中，居中只能在设置文本之后，设置宽度后文本刷新会有跳动或闪动，怎么解决？
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder viewHolder, int i) {
         pos = viewHolder.getAdapterPosition();
-        viewHolder.className.setText(classList.get(a).getClass_name());
-        viewHolder.classPlace.setText(classList.get(a).getClass_place());
+        viewHolder.className.setVisibility(View.INVISIBLE);
+        viewHolder.classPlace.setVisibility(View.INVISIBLE);
+        viewHolder.className.setText(classList.get(i).getClass_name());
+        viewHolder.classPlace.setText(classList.get(i).getClass_place());
         viewHolder.itemView.post(new Runnable() {
             @Override
             public void run() {
                 viewHolder.className.setWidth(viewHolder.itemView.getWidth());
                 viewHolder.classPlace.setWidth(viewHolder.itemView.getWidth());
+                viewHolder.className.setVisibility(View.VISIBLE);
+                viewHolder.classPlace.setVisibility(View.VISIBLE);
             }
         });
 
@@ -60,7 +64,7 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
         popupWindows.get(pos).setOutsideTouchable(true);
         // 设置PopupWindow是否能响应点击事件
         popupWindows.get(pos).setTouchable(true);
-        //TODO:弹出菜单的点击事件
+        //TODO:点击弹出菜单的对应课程后，跳至添加/修改课程界面
 
         int span = classList.get(i).getEndPeriod() - classList.get(i).getStartPeriod() + 1;
         LayoutParams params = viewHolder.itemView.getLayoutParams();
@@ -75,10 +79,8 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
                     viewHolder.itemView.setElevation(dp2px(8));
                     pos = viewHolder.getAdapterPosition();
                     ((TextView) popupWindows.get(pos).getContentView().findViewById(R.id.table_menu_title)).setText(classList.get(pos).getClass_name());
-                    if(classList.get(pos).getClass_name()!=null) {
+                    if(classList.get(pos).getClass_name()!=null&&!classList.get(pos).getClass_name().equals("空课")) {
                         ((TextView) popupWindows.get(pos).getContentView().findViewById(R.id.table_menu_content)).setText(DateHelper.weeksToString(classList.get(pos).getWeeks()));
-                    }else{
-                        ((TextView) popupWindows.get(pos).getContentView().findViewById(R.id.table_menu_content)).setText("空课");
                     }
                     popupWindows.get(pos).showAsDropDown(viewHolder.itemView);
                 }else{

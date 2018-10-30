@@ -95,7 +95,7 @@ public class AddClassActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.add_class_menu, menu);
+        getMenuInflater().inflate(R.menu.add_dialog_menu, menu);
         return true;
     }
 
@@ -261,7 +261,7 @@ public class AddClassActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.save_class:
+            case R.id.save_btn:
                 //先读取选择结果
                 for (int i = 0; i < sessions.size(); i++) {
                     //先初始化

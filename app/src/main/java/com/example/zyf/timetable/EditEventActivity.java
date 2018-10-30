@@ -20,17 +20,14 @@ import com.example.zyf.timetable.db.Event;
 import org.litepal.LitePal;
 
 import java.util.Calendar;
-
+//TODO: should be replaced with addEventActivity
 public class EditEventActivity extends AppCompatActivity {
 
     private TextView editeventname;
-
-    ArrayAdapter <String> adapter;
     private TextView editeventdate;
     private TextView editeventnote;
 
     private Spinner editeventcolor;
-
 
     private int year;
     private int month;
@@ -59,35 +56,21 @@ public class EditEventActivity extends AppCompatActivity {
         editeventname=findViewById(R.id.editeventname);
         editeventdate=findViewById(R.id.editeventdate);
         editeventnote=findViewById(R.id.editeventnote);
-
         editeventcolor=findViewById(R.id.editeventcolor);
-
-
-        SpinnerAdapter adapter=null;
-        adapter= ArrayAdapter.createFromResource(this,R.array.eventcolors,android.R.layout.simple_spinner_dropdown_item);
+        SpinnerAdapter adapter=ArrayAdapter.createFromResource(this,R.array.eventcolors,android.R.layout.simple_spinner_dropdown_item);
         editeventcolor.setAdapter(adapter);
 
         //传递id
         Intent intent=getIntent();
         id=intent.getLongExtra("data",0);
-
-        //List<Event> events= LitePal.select("id").find(Event.class);
         Event oneevent=LitePal.find(Event.class,id);
         //显示要修改的数据
         editeventname.setText(oneevent.getEventName());
-        //editeventdate.setText(oneevent.getEventyear()+"年"+oneevent.getEventmonth()+"月"+oneevent.getEventday()+"日");
-
-        //String s=String.valueOf(id);
-
-        //Toast.makeText(EditEventActivity.this,s,Toast.LENGTH_SHORT).show();
         //颜色选择
         editeventcolor.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
                 TextView textView=(TextView)view;
-                //Toast.makeText(AddEventsActivity.this,((TextView) view).getText().toString(),Toast.LENGTH_SHORT).show();
-
                 switch (textView.getText().toString()){
                     case "紫色":
                         colornum=0;
@@ -120,19 +103,14 @@ public class EditEventActivity extends AppCompatActivity {
             }
         });
 
-
-
-        //editeventdate=findViewById(R.id.editeventdate);
         final Calendar calendar=Calendar.getInstance();
         year=calendar.get(Calendar.YEAR);
         month=calendar.get(Calendar.MONTH)+1;
         day=calendar.get(Calendar.DAY_OF_MONTH);
-//        eventdate.setFocusable(false);
         edyear=oneevent.getEventYear();
         edmonth=oneevent.getEventMonth();
         edday=oneevent.getEventDay();
         editeventdate.setText(String.format("%d年%d月%d日",edyear,edmonth,edday));
-
         editeventdate.setInputType(InputType.TYPE_NULL);
         editeventdate.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
@@ -159,28 +137,18 @@ public class EditEventActivity extends AppCompatActivity {
                 }
                 else {
                     event.setEventName(editeventname.getText().toString());
-
                     event.setEventYear(newyear);
                     event.setEventMonth(newmonth);
                     event.setEventDay(newday);
-
                     event.setEventColor(colornum);//存储颜色
-
                     event.setEventNote(editeventnote.getText().toString());
-
                     event.update(id);
-
                     Intent intent=new Intent(EditEventActivity.this,MainActivity.class);
                     //getSupportFragmentManager().beginTransaction().replace(R.id.fragment,efFragment).commitAllowingStateLoss();
                     startActivity(intent);
                 }
-
-
-
             }
         });
-
-
     }
     private void showDatePickerDialog() {
         Calendar c = Calendar.getInstance();
@@ -188,7 +156,6 @@ public class EditEventActivity extends AppCompatActivity {
 
             @Override
             public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-                // TODO Auto-generated method stub
                 editeventdate.setText(year+"年"+(monthOfYear+1)+"月"+dayOfMonth+"日");
                 newyear=year;
                 newmonth=monthOfYear+1;

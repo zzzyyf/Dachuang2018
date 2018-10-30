@@ -6,7 +6,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -17,18 +21,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.example.zyf.timetable.db.Event;
 
+import org.litepal.exceptions.LitePalSupportException;
+
 import java.util.Calendar;
 
 public class AddEventsActivity extends AppCompatActivity {
 
-    private TextView eventname;
+    private TextView eventNameText;
 
     ArrayAdapter <String> adapter;
-    private TextView eventdate;
-    private TextView eventnote;
-
-    private Spinner eventcolor;
-
+    private TextView eventDateText;
+    private TextView eventNoteText;
+    private Spinner eventColorText;
 
     private int year;
     private int month;
@@ -38,30 +42,34 @@ public class AddEventsActivity extends AppCompatActivity {
     private int newmonth;
     private int newday;
 
+    Event event;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_addevents);
+        //去除标题栏，AppCompatActivity专用
+        supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
+        setContentView(R.layout.activity_add_events);
+        //使全屏之一
+        getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
         //Toolbar设置
-        Toolbar toolbar=findViewById(R.id.toolbar);
-        toolbar.setTitle("事件");
+        Toolbar toolbar=findViewById(R.id.add_event_dialog_toolbar);
+        toolbar.setNavigationIcon(R.drawable.close);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        eventname=findViewById(R.id.event_name);
-        eventdate=findViewById(R.id.event_date);
-        eventnote=findViewById(R.id.event_note);
+        //TODO: 设置TextInputLayout
+        eventNameText =findViewById(R.id.event_name);
+        eventDateText =findViewById(R.id.event_date);
+        eventNoteText =findViewById(R.id.event_note);
+        eventColorText =findViewById(R.id.event_color);
 
-        eventcolor=findViewById(R.id.event_color);
-
-
-        SpinnerAdapter adapter=null;
-        adapter=ArrayAdapter.createFromResource(this,R.array.eventcolors,android.R.layout.simple_spinner_dropdown_item);
-        eventcolor.setAdapter(adapter);
+        SpinnerAdapter adapter=ArrayAdapter.createFromResource(this,R.array.eventcolors,android.R.layout.simple_spinner_dropdown_item);
+        eventColorText.setAdapter(adapter);
 
         //颜色选择
-        eventcolor.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        eventColorText.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
@@ -100,18 +108,15 @@ public class AddEventsActivity extends AppCompatActivity {
             }
         });
 
-
-
-        eventdate=findViewById(R.id.event_date);
+        eventDateText =findViewById(R.id.event_date);
         final Calendar calendar=Calendar.getInstance();
         year=calendar.get(Calendar.YEAR);
         month=calendar.get(Calendar.MONTH)+1;
         day=calendar.get(Calendar.DAY_OF_MONTH);
-//        eventdate.setFocusable(false);
-        eventdate.setText(String.format("%d年%d月%d日",year,month,day));
+        eventDateText.setText(String.format("%d年%d月%d日",year,month,day));
 
-        eventdate.setInputType(InputType.TYPE_NULL);
-        eventdate.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        eventDateText.setInputType(InputType.TYPE_NULL);
+        eventDateText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus){
@@ -120,53 +125,59 @@ public class AddEventsActivity extends AppCompatActivity {
             }
         });
 
-        eventdate.setOnClickListener(new View.OnClickListener() {
+        eventDateText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showDatePickerDialog();
             }
         });
-        final Event event=new Event();
-        Button button=findViewById(R.id.eventsure);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (eventname.getText().toString().equals("") ){
+        event=new Event();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.add_dialog_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.save_btn:
+                if (eventNameText.getText().toString().equals("") ){
                     Toast.makeText(getApplicationContext(),"未输入事件名称",Toast.LENGTH_SHORT).show();
                 }
                 else {
-                    event.setEventName(eventname.getText().toString());
-
+                    event.setEventName(eventNameText.getText().toString());
                     event.setEventYear(newyear);
                     event.setEventMonth(newmonth);
                     event.setEventDay(newday);
-
                     event.setEventColor(colornum);//存储颜色
-
-                    event.setEventNote(eventnote.getText().toString());
-
-                    event.save();
-
-                    Intent intent=new Intent(AddEventsActivity.this,MainActivity.class);
-                    //getSupportFragmentManager().beginTransaction().replace(R.id.fragment,efFragment).commitAllowingStateLoss();
-                    startActivity(intent);
+                    event.setEventNote(eventNoteText.getText().toString());
+                    try {
+                        event.save();
+                        setResult(RESULT_OK);
+                        finish();
+                    }catch (LitePalSupportException e){
+                        Toast.makeText(AddEventsActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
                 }
-
-
-
-            }
-        });
-
-
+                break;
+            case android.R.id.home:
+                setResult(RESULT_CANCELED);
+                finish();
+                break;
+                default:
+        }
+        return true;
     }
+
     private void showDatePickerDialog() {
         Calendar c = Calendar.getInstance();
         new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
-
             @Override
             public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-                // TODO Auto-generated method stub
-                eventdate.setText(year+"年"+(monthOfYear+1)+"月"+dayOfMonth+"日");
+                eventDateText.setText(year+"年"+(monthOfYear+1)+"月"+dayOfMonth+"日");
                 newyear=year;
                 newmonth=monthOfYear+1;
                 newday=dayOfMonth;
@@ -174,18 +185,4 @@ public class AddEventsActivity extends AppCompatActivity {
         }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)).show();
 
     }
-
-
-
-//    public void setDate(int year,int month,int day){
-//        this.year=year;
-//        this.month=month+1;
-//        this.day=day;
-//        eventdate.setText(String.format("%d年%d月%d日",year,month,day));
-//    }
-
-//    @Override
-//    public void sendDate(int year, int month, int day) {
-//        setDate(year,month,day);
-//    }
 }

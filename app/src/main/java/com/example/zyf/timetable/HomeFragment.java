@@ -39,7 +39,6 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        LitePal.getDatabase();
         eventList.clear();
         initData();
 //        initView();
@@ -57,7 +56,6 @@ public class HomeFragment extends Fragment {
 
         int num = 1;
         for (Event event : events) {
-            //Date date = new Date(System.currentTimeMillis());
             // 获取当前日期
             DateHelper.setDate();
             int year = DateHelper.year;
@@ -76,7 +74,7 @@ public class HomeFragment extends Fragment {
 
                 eventList.add(item);
             } catch (Exception ex) {
-                Log.e("HomeFragment", "initData: "+ ex.toString());
+                Log.e("HomeFragment", "initData: " + ex.toString());
             }
         }
 

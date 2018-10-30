@@ -25,13 +25,14 @@ import static com.example.zyf.timetable.DateHelper.selectedWeek;
 import static com.example.zyf.timetable.DateHelper.setDate;
 
 public class MainActivity extends AppCompatActivity {
-    final int HOME_FRAGMENT = 0, TIMETABLE_FRAGMENT = 1, EVENT_FRAGMENT = 2, PLAN_FRAGMENT = 3;
+    final int HOME_FRAGMENT = 0, TIMETABLE_FRAGMENT = 1, PLAN_FRAGMENT = 2, EVENT_FRAGMENT = 3;
     final int ADD_SUBJECT = 10, ADD_EVENT = 20, ADD_PLAN = 30, SET_SEMESTER = 40;
     List<Subject> allClassList;
     List<List<Subject>> weekClassList;
     Fragment fragment;
     Toolbar toolbar;
-    int selectedFragment = 0;//0-HomeFragment, 1-TimeTableFragment, 2-EventFragment, 3-PlanFragment
+    int selectedFragment = 0;
+    BottomNavigationBar naviBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,10 +82,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        //TODO: 旋转屏幕时刷新recyclerview
-
         //初始化BottomNaviBar
-        BottomNavigationBar naviBar = findViewById(R.id.navi_main);
+        naviBar = findViewById(R.id.navi_main);
         naviBar
                 .addItem(new BottomNavigationItem(R.drawable.home, "主页"))
                 .addItem(new BottomNavigationItem(R.drawable.table, "课程表"))
@@ -96,28 +95,32 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTabSelected(int position) {
                 switch (position) {
-                    case 0:
+                    case HOME_FRAGMENT:
                         //选择“主页”
                         fragment = new HomeFragment();
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.container, fragment, "Home")
                                 .commit();
+                        invalidateOptionsMenu();
                         break;
-                    case 1:
+                    case TIMETABLE_FRAGMENT:
                         //选择“课程表”
                         fragment = TimeTableFragment.newInstance("1", "2");
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.container, fragment, "Timetable")
                                 .commit();
+                        invalidateOptionsMenu();
                         break;
-                    case 2:
+                    case PLAN_FRAGMENT:
                         //选择“计划”
+                        invalidateOptionsMenu();
+                    case EVENT_FRAGMENT:
+                        //选择“事件”
                         fragment = new EventFragment();
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.container, fragment, "Event")
                                 .commit();
-                    case 3:
-                        //选择“事件”
+                        invalidateOptionsMenu();
                     default:
                 }
                 selectedFragment = position;
@@ -143,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
         switch (selectedFragment) {
             case HOME_FRAGMENT:
                 getSupportFragmentManager().beginTransaction()
-                        .add(R.id.container, new HomeFragment(), "Home")
+                        .replace(R.id.container, new HomeFragment(), "Home")
                         .commit();
                 break;
             case TIMETABLE_FRAGMENT:
@@ -153,11 +156,11 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case EVENT_FRAGMENT:
                 getSupportFragmentManager().beginTransaction()
-                        .add(R.id.container, new EventFragment(), "Event")
+                        .replace(R.id.container, new EventFragment(), "Event")
                         .commit();
                 break;
             case PLAN_FRAGMENT:
-                //TODO: PlanFragment unfinished
+                //
             default:
         }
     }
@@ -165,9 +168,35 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
-        menu.findItem(R.id.add_event).setVisible(false);
-        menu.findItem(R.id.add_plan).setVisible(false);
         return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        switch (selectedFragment){
+            case HOME_FRAGMENT:
+                menu.findItem(R.id.add_class).setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
+                menu.findItem(R.id.add_event).setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
+                menu.findItem(R.id.add_plan).setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
+                break;
+            case TIMETABLE_FRAGMENT:
+                menu.findItem(R.id.add_event).setVisible(false);
+                menu.findItem(R.id.add_plan).setVisible(false);
+                menu.findItem(R.id.add_class).setVisible(true);
+                break;
+            case EVENT_FRAGMENT:
+                menu.findItem(R.id.add_event).setVisible(true);
+                menu.findItem(R.id.add_plan).setVisible(false);
+                menu.findItem(R.id.add_class).setVisible(false);
+                break;
+            case PLAN_FRAGMENT:
+                menu.findItem(R.id.add_event).setVisible(false);
+                menu.findItem(R.id.add_plan).setVisible(true);
+                menu.findItem(R.id.add_class).setVisible(false);
+                break;
+                default:
+        }
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -180,6 +209,12 @@ public class MainActivity extends AppCompatActivity {
             case R.id.set_table_item:
                 startActivityForResult(new Intent(MainActivity.this, SetSemesterActivity.class), SET_SEMESTER);
                 //点击课表设置按钮
+                break;
+            case R.id.add_event:
+                startActivityForResult(new Intent(MainActivity.this, AddEventsActivity.class), ADD_EVENT);
+                break;
+            case R.id.add_plan:
+                startActivityForResult(new Intent(MainActivity.this, AddPlansActivity.class), ADD_PLAN);
                 break;
             default:
         }
@@ -205,18 +240,13 @@ public class MainActivity extends AppCompatActivity {
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.container, fragment, "Timetable")
                                 .commit();
+                        naviBar.setFirstSelectedPosition(TIMETABLE_FRAGMENT);
                     }
                     //只需部分更新即可
+                    //TODO: 添加新课后课表不自动更新
                     int weekday = data.getIntExtra("weekday", 1);
                     if (LitePal.findLast(Subject.class).getWeeks().contains(getSelectedWeek())) {
                         ((TimeTableFragment) fragment).partialUpdateTableList(weekday);
-                    }
-                } else {
-                    if (!(getSupportFragmentManager().findFragmentById(R.id.container) instanceof TimeTableFragment)) {
-                        //把当前显示的碎片替换为Timetable
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.container, TimeTableFragment.newInstance("1", "2"), "Timetable")
-                                .commit();
                     }
                 }
                 break;
@@ -230,6 +260,7 @@ public class MainActivity extends AppCompatActivity {
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.container, fragment, "Timetable")
                                 .commit();
+                        naviBar.setFirstSelectedPosition(TIMETABLE_FRAGMENT);
                     }
                     //更新数据
                     ((TimeTableFragment) fragment).wrapper.notifyDataSetChanged();

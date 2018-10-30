@@ -31,7 +31,16 @@
             android:name=".WeekSelector"
             android:parentActivityName=".AddClassActivity"
             android:theme="@style/Base.Theme.AppCompat.Light.Dialog" />
-        <activity android:name=".SetSemesterActivity"
+        <activity
+            android:name=".SetSemesterActivity"
+            android:theme="@style/FullScreenDialogTheme"
+            />
+        <activity
+            android:name=".AddEventsActivity"
+            android:theme="@style/FullScreenDialogTheme"
+            />
+        <activity
+            android:name=".EditEventActivity"
             android:theme="@style/FullScreenDialogTheme"
             />
 
