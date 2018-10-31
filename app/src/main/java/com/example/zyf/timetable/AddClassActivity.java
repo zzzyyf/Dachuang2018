@@ -1,9 +1,11 @@
 package com.example.zyf.timetable;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -15,8 +17,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.MultiAutoCompleteTextView;
+import android.widget.PopupWindow;
 import android.widget.Toast;
 
 import com.example.zyf.timetable.db.Subject;
@@ -28,7 +32,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AddClassActivity extends AppCompatActivity {
-    //TODO: 在课程表点击新增课表时能读取该点击位置的weekday和session并能初始化
     EditText weekText;//显示已选择的所有周
     AutoCompleteTextView nameText;//课名
     MultiAutoCompleteTextView placeText;//上课地点
@@ -37,6 +40,9 @@ public class AddClassActivity extends AppCompatActivity {
     RecyclerView weekdayPicker, sessionPicker;
     List<WeekItem> weekdays, sessions;//已选择的上课日、上课节的列表
     SwipeHelper weekdayHelper, sessionHelper;
+    Button deleteBtn;
+    Subject item;
+    Intent intent;
 
     final int PERIOD_EMPTY=1, PERIOD_DISCONTINUED=2, PERIOD_LAGGED=3, PERIOD_OK=4,
     EDIT_SUBJECT=5, ADD_SUBJECT=10;//period为空，period不连续,当前课程与已有某节课重复,课程正常
@@ -92,10 +98,13 @@ public class AddClassActivity extends AppCompatActivity {
         sessionHelper.setLayout(4, 60, 24);
         sessionHelper.setStatusList(createSessionHelperList());
         sessionPicker.setOnTouchListener(sessionHelper);
+        deleteBtn=findViewById(R.id.delete_class);
+        deleteBtn.setVisibility(View.GONE);
 
-        Intent intent = getIntent();
+        //接收编辑/从空课新建课程的有关数据
+        intent = getIntent();
         if(intent!=null){
-            Subject item = (Subject) intent.getSerializableExtra("ClassItem");
+            item = (Subject) intent.getSerializableExtra("ClassItem");
             if(intent.getIntExtra("OperationType", 10)==5) {//10==ADD_SUBJECT, 5==EDIT_SUBJECT
                 nameText.setText(item.getClass_name());
                 placeText.setText(item.getClass_place());
@@ -105,11 +114,42 @@ public class AddClassActivity extends AppCompatActivity {
                 }
                 setWeekText();
             }
-            //设置weekday的初始值
-            weekdayHelper.setLit(item.getWeekday()-1, true);
-            //设置period的初始值
-            for (int i=item.getStartPeriod();i<=item.getEndPeriod();i++) {
-                sessionHelper.setLit(i-1, true);
+            if(item!=null) {
+                //此时不是从头开始新建课程
+                //设置weekday的初始值
+                weekdayHelper.setLit(item.getWeekday() - 1, true);
+                weekdayHelper.isSelected=item.getWeekday()-1;
+                //设置period的初始值
+                for (int i = item.getStartPeriod(); i <= item.getEndPeriod(); i++) {
+                    sessionHelper.setLit(i - 1, true);
+                }
+                if (!item.getClass_name().equals("空课")&&item.getWeeks().size()!=0) {
+                    //此时既不是从头新建也不是填充的空课，可以删除
+                    deleteBtn.setVisibility(View.VISIBLE);
+                    deleteBtn.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(AddClassActivity.this, R.style.Theme_AppCompat_Light_Dialog_Alert);
+                            builder.setCancelable(true)
+                                    .setMessage("确认删除本节课吗？")
+                                    .setPositiveButton("确认", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            try {
+                                                LitePal.delete(Subject.class, item.getId());
+                                                Intent intentAfterDel = new Intent();
+                                                intentAfterDel.putExtra("Weekday", item.getWeekday());
+                                                setResult(3, intentAfterDel);
+                                                finish();
+                                            } catch (LitePalSupportException e) {
+                                                Toast.makeText(AddClassActivity.this, "删除失败：" + e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    }).setNegativeButton("取消", null)
+                                    .show();
+                        }
+                    });
+                }
             }
         }
         weekdayPicker.post(new Runnable() {
@@ -240,10 +280,11 @@ public class AddClassActivity extends AppCompatActivity {
         if(subjectList.size()!=0){
             for (Subject subject:subjectList){
                 //若没有完全错开则必有重合
-                if (!(subject.getEndPeriod()<periods.get(0)||subject.getStartPeriod()>periods.get(periods.size()-1))){
-                    Toast.makeText(AddClassActivity.this, "该节课程的时间与 "+subject.getClass_name()+" 冲突了哦，请检查~", Toast.LENGTH_SHORT).show();
-                    return PERIOD_LAGGED;
-                }
+                if (intent.getIntExtra("OperationType", 10)!=5)
+                    if (!(subject.getEndPeriod()<periods.get(0)||subject.getStartPeriod()>periods.get(periods.size()-1))){
+                        Toast.makeText(AddClassActivity.this, "该节课程的时间与 "+subject.getClass_name()+" 冲突了哦，请检查~", Toast.LENGTH_SHORT).show();
+                        return PERIOD_LAGGED;
+                    }
             }
         }
         if(periods.size()==0) {
@@ -307,10 +348,12 @@ public class AddClassActivity extends AppCompatActivity {
                 intent.putExtra("weekday", weekdayHelper.isSelected+1);
                 setResult(RESULT_OK, intent);
                 finish();
+                break;
             //设置点击toolbar返回按钮的动作
             case android.R.id.home:
                 setResult(RESULT_CANCELED);
                 finish();
+                break;
             default:
         }
         return true;

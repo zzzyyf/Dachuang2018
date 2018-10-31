@@ -42,7 +42,6 @@ public class MainActivity extends AppCompatActivity {
 
         //TODO: 加入刷新操作
         setContentView(R.layout.activity_main);
-        //TODO: add other fragments & Toolbar menu
         //初始化Toolbar
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -243,7 +242,21 @@ public class MainActivity extends AppCompatActivity {
                         naviBar.setFirstSelectedPosition(TIMETABLE_FRAGMENT);
                     }
                     //只需部分更新即可
-                    //TODO: 添加新课后课表不自动更新
+                    int weekday = data.getIntExtra("weekday", 1);
+                    if (LitePal.findLast(Subject.class).getWeeks().contains(getSelectedWeek())) {
+                        ((TimeTableFragment) fragment).partialUpdateTableList(weekday);
+                    }
+                }else if(resultCode == 3) {//删除了对应课程
+                    //若当前显示的碎片不是Timetable
+                    if (!(getSupportFragmentManager().findFragmentById(R.id.container) instanceof TimeTableFragment)) {
+                        //把当前显示的碎片替换为Timetable
+                        fragment = TimeTableFragment.newInstance("1", "2");
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.container, fragment, "Timetable")
+                                .commit();
+                        naviBar.setFirstSelectedPosition(TIMETABLE_FRAGMENT);
+                    }
+                    //只需部分更新即可
                     int weekday = data.getIntExtra("weekday", 1);
                     if (LitePal.findLast(Subject.class).getWeeks().contains(getSelectedWeek())) {
                         ((TimeTableFragment) fragment).partialUpdateTableList(weekday);
@@ -266,6 +279,36 @@ public class MainActivity extends AppCompatActivity {
                     ((TimeTableFragment) fragment).wrapper.notifyDataSetChanged();
                     ((TimeTableFragment) fragment).updateEntireTableList(selectedWeek, false);
                 }
+                break;
+            case EDIT_SUBJECT:
+                if (resultCode == RESULT_OK) {
+                    //若当前显示的碎片不是Timetable
+                    if (!(getSupportFragmentManager().findFragmentById(R.id.container) instanceof TimeTableFragment)) {
+                        //把当前显示的碎片替换为Timetable
+                        fragment = TimeTableFragment.newInstance("1", "2");
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.container, fragment, "Timetable")
+                                .commit();
+                        naviBar.setFirstSelectedPosition(TIMETABLE_FRAGMENT);
+                    }
+                    //只需部分更新即可
+                    int weekday = data.getIntExtra("weekday", 1);
+                    ((TimeTableFragment) fragment).partialUpdateTableList(weekday);
+                }else if(resultCode == 3) {//删除了对应课程
+                    //若当前显示的碎片不是Timetable
+                    if (!(getSupportFragmentManager().findFragmentById(R.id.container) instanceof TimeTableFragment)) {
+                        //把当前显示的碎片替换为Timetable
+                        fragment = TimeTableFragment.newInstance("1", "2");
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.container, fragment, "Timetable")
+                                .commit();
+                        naviBar.setFirstSelectedPosition(TIMETABLE_FRAGMENT);
+                    }
+                    //只需部分更新即可
+                    int weekday = data.getIntExtra("weekday", 1);
+                    ((TimeTableFragment) fragment).partialUpdateTableList(weekday);
+                }
+                break;
             default:
         }
     }

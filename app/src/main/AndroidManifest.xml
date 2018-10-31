@@ -25,7 +25,6 @@
         </activity>
         <activity
             android:name=".AddClassActivity"
-            android:parentActivityName=".MainActivity"
             android:theme="@style/FullScreenDialogTheme" />
         <activity
             android:name=".WeekSelector"

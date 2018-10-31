@@ -9,6 +9,7 @@ import android.support.v7.widget.LinearSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SnapHelper;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -152,9 +153,9 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
         //初始化tableView
         tableManager = new StaggeredGridLayoutManager(daysPerWeek, LinearLayoutManager.VERTICAL);
         tableView.setLayoutManager(tableManager);
-        tableAdapter = new SubjectAdapter(getContext(), tableList);
+        if(tableAdapter==null)
+            tableAdapter = new SubjectAdapter(getContext(), tableList);
         tableView.setAdapter(tableAdapter);
-
 
     }
 
@@ -301,13 +302,22 @@ public class TimeTableFragment extends Fragment implements HandleScroll {
 
     public void partialUpdateTableList(int weekday){
         weekClassList.set(weekday-1, fillWeekdayWithEmpty(selectedWeek, weekday));
-        tableList = getClassListOfWeek(weekClassList);
-        tableAdapter.notifyDataSetChanged();
+        tableView.post(new Runnable() {
+            @Override
+            public void run() {
+                tableList = getClassListOfWeek(weekClassList);
+                tableAdapter.setClassList(tableList);
+                tableAdapter.notifyDataSetChanged();
+            }
+        });
+
     }
 
     public void updateEntireTableList(int week, boolean isFirst){
         tableList = getClassListOfWeek(fillWithEmptyClass(week));
-        if (!isFirst)
-            tableAdapter.notifyDataSetChanged();
+        if (!isFirst) {
+            tableAdapter.setClassList(tableList);
+            tableAdapter.notifyItemRangeChanged(0, daysPerWeek*classesPerDay);
+        }
     }
 }

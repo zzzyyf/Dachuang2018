@@ -65,7 +65,6 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
         popupWindows.get(pos).setOutsideTouchable(true);
         // 设置PopupWindow是否能响应点击事件
         popupWindows.get(pos).setTouchable(true);
-        //TODO:点击弹出菜单的对应课程后，跳至添加/修改课程界面
 
         int span = classList.get(i).getEndPeriod() - classList.get(i).getStartPeriod() + 1;
         LayoutParams params = viewHolder.itemView.getLayoutParams();
@@ -85,10 +84,11 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
                         popupWindows.get(pos).getContentView().findViewById(R.id.table_menu_title).setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
+                                pos = viewHolder.getAdapterPosition();
                                 Intent intent = new Intent(context, AddClassActivity.class);
                                 intent.putExtra("ClassItem", classList.get(pos));
                                 intent.putExtra("OperationType", 5);//10==ADD_SUBJECT, 5==EDIT_SUBJECT
-                                ((Activity)context).startActivityForResult(intent, 1);
+                                ((Activity)context).startActivityForResult(intent, 10);
                             }
                         });
                     }else if(classList.get(pos).getClass_name().equals("空课")){
@@ -96,10 +96,11 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
                         popupWindows.get(pos).getContentView().findViewById(R.id.table_menu_title).setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
+                                pos = viewHolder.getAdapterPosition();
                                 Intent intent = new Intent(context, AddClassActivity.class);
                                 intent.putExtra("ClassItem", classList.get(pos));
                                 intent.putExtra("OperationType", 10);//10==ADD_SUBJECT, 5==EDIT_SUBJECT
-                                ((Activity)context).startActivityForResult(intent, 1);
+                                ((Activity)context).startActivityForResult(intent, 10);
                             }
                         });
                     }
