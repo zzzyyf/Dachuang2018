@@ -26,7 +26,7 @@ import static com.example.zyf.timetable.DateHelper.setDate;
 
 public class MainActivity extends AppCompatActivity {
     final int HOME_FRAGMENT = 0, TIMETABLE_FRAGMENT = 1, PLAN_FRAGMENT = 2, EVENT_FRAGMENT = 3;
-    final int ADD_SUBJECT = 10, ADD_EVENT = 20, ADD_PLAN = 30, SET_SEMESTER = 40;
+    final int EDIT_SUBJECT=5, ADD_SUBJECT = 10, EDIT_EVENT=15, ADD_EVENT = 20, ADD_PLAN = 30, SET_SEMESTER = 40;
     List<Subject> allClassList;
     List<List<Subject>> weekClassList;
     Fragment fragment;

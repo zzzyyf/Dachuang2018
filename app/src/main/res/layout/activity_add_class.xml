@@ -15,7 +15,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="spread_inside"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        app:title="添加课程" />
+        app:title="添加/编辑课程" />
 
     <AutoCompleteTextView
         android:id="@+id/class_name_text"

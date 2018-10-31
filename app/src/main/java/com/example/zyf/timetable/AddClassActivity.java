@@ -38,7 +38,8 @@ public class AddClassActivity extends AppCompatActivity {
     List<WeekItem> weekdays, sessions;//已选择的上课日、上课节的列表
     SwipeHelper weekdayHelper, sessionHelper;
 
-    final int PERIOD_EMPTY=1, PERIOD_DISCONTINUED=2, PERIOD_LAGGED=3, PERIOD_OK=4;//period为空，period不连续,当前课程与已有某节课重复,课程正常
+    final int PERIOD_EMPTY=1, PERIOD_DISCONTINUED=2, PERIOD_LAGGED=3, PERIOD_OK=4,
+    EDIT_SUBJECT=5, ADD_SUBJECT=10;//period为空，period不连续,当前课程与已有某节课重复,课程正常
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -91,6 +92,38 @@ public class AddClassActivity extends AppCompatActivity {
         sessionHelper.setLayout(4, 60, 24);
         sessionHelper.setStatusList(createSessionHelperList());
         sessionPicker.setOnTouchListener(sessionHelper);
+
+        Intent intent = getIntent();
+        if(intent!=null){
+            Subject item = (Subject) intent.getSerializableExtra("ClassItem");
+            if(intent.getIntExtra("OperationType", 10)==5) {//10==ADD_SUBJECT, 5==EDIT_SUBJECT
+                nameText.setText(item.getClass_name());
+                placeText.setText(item.getClass_place());
+                //设置周数的初始值
+                for (int i = 0; i < item.getWeeks().size(); i++) {
+                    litWeeksList.set(item.getWeeks().get(i) - 1, 1);
+                }
+                setWeekText();
+            }
+            //设置weekday的初始值
+            weekdayHelper.setLit(item.getWeekday()-1, true);
+            //设置period的初始值
+            for (int i=item.getStartPeriod();i<=item.getEndPeriod();i++) {
+                sessionHelper.setLit(i-1, true);
+            }
+        }
+        weekdayPicker.post(new Runnable() {
+            @Override
+            public void run() {
+                weekdayHelper.initLit();
+            }
+        });
+        sessionPicker.post(new Runnable() {
+            @Override
+            public void run() {
+                sessionHelper.initLit();
+            }
+        });
     }
 
     @Override
@@ -164,55 +197,17 @@ public class AddClassActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (requestCode == 1) {
             switch (resultCode) {
                 case RESULT_OK:
                     litWeeksList = data.getIntegerArrayListExtra("Lit");
-                    StringBuilder builder = new StringBuilder();
-                    boolean isContinued = false;
-                    builder.append("已选择：");
-                    int j = DateHelper.endWeek - 1;//最后一个点亮的周数
-                    while (j >= 0 && litWeeksList.get(j) == 0)
-                        j--;
-                    for (int i = 0; i < DateHelper.endWeek; i++) {
-                        //第i项已被选中
-                        if (litWeeksList.get(i) != 0) {
-                            if (!isContinued) {
-                                //从不连续选中到连续选中，一个新周段的开始
-                                builder.append(i + 1);
-                                isContinued = true;
-                                //若最后一周为离散选择
-                                if (i == DateHelper.endWeek - 1)
-                                    builder.append("周");
-                            } else {
-                                //处在连续过程中
-                                //若一直连续选到最后一周
-                                if (i == DateHelper.endWeek - 1) {
-                                    builder.append("-");
-                                    builder.append(i + 1);
-                                    builder.append("周");
-                                }
-                            }
-                            //第i项未被选中
-                        } else {
-                            if (isContinued) {
-                                //从连续选中到不连续选中
-                                isContinued = false;
-                                //若不是只取了一周
-                                if (!(i == 1 || litWeeksList.get(i - 2) == 0)) {
-                                    builder.append("-");
-                                    builder.append(i);
-                                }
-                                builder.append("周");
-                                if (i < j)//不是在最后一个周段结束时
-                                    builder.append("，");
-                            }
-                        }
-                    }
-                    if (builder.toString().equals("已选择："))
-                        weekText.setText("");
-                    else weekText.setText(builder.toString());
+                    setWeekText();
                     break;
                 default:
             }
@@ -319,5 +314,52 @@ public class AddClassActivity extends AppCompatActivity {
             default:
         }
         return true;
+    }
+
+    private void setWeekText(){
+        StringBuilder builder = new StringBuilder();
+        boolean isContinued = false;
+        builder.append("已选择：");
+        int j = DateHelper.endWeek - 1;//最后一个点亮的周数
+        while (j >= 0 && litWeeksList.get(j) == 0)
+            j--;
+        for (int i = 0; i < DateHelper.endWeek; i++) {
+            //第i项已被选中
+            if (litWeeksList.get(i) != 0) {
+                if (!isContinued) {
+                    //从不连续选中到连续选中，一个新周段的开始
+                    builder.append(i + 1);
+                    isContinued = true;
+                    //若最后一周为离散选择
+                    if (i == DateHelper.endWeek - 1)
+                        builder.append("周");
+                } else {
+                    //处在连续过程中
+                    //若一直连续选到最后一周
+                    if (i == DateHelper.endWeek - 1) {
+                        builder.append("-");
+                        builder.append(i + 1);
+                        builder.append("周");
+                    }
+                }
+                //第i项未被选中
+            } else {
+                if (isContinued) {
+                    //从连续选中到不连续选中
+                    isContinued = false;
+                    //若不是只取了一周
+                    if (!(i == 1 || litWeeksList.get(i - 2) == 0)) {
+                        builder.append("-");
+                        builder.append(i);
+                    }
+                    builder.append("周");
+                    if (i < j)//不是在最后一个周段结束时
+                        builder.append("，");
+                }
+            }
+        }
+        if (builder.toString().equals("已选择："))
+            weekText.setText("");
+        else weekText.setText(builder.toString());
     }
 }

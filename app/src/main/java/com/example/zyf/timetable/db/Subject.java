@@ -2,9 +2,10 @@ package com.example.zyf.timetable.db;
 
 import org.litepal.crud.LitePalSupport;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class Subject extends LitePalSupport {
+public class Subject extends LitePalSupport implements Serializable {
     /**
      * 课程名
      */

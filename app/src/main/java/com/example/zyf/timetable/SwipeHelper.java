@@ -8,6 +8,7 @@ import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 import java.util.ArrayList;
+import java.util.List;
 
 public class SwipeHelper implements View.OnTouchListener {
     ArrayList<WeekItem> lit;//0=未点亮的，1=已点亮的
@@ -33,7 +34,6 @@ public class SwipeHelper implements View.OnTouchListener {
         for (int i=0;i<list.size();i++){
             lit.add(new WeekItem((i+""), list.get(i)));
         }
-
     }
 
     public void setLayout(int column, int width, int height){
@@ -140,5 +140,18 @@ public class SwipeHelper implements View.OnTouchListener {
 
     public ArrayList<WeekItem> getLit() {
         return lit;
+    }
+
+    public void setLit(int index, boolean isLit){
+        lit.get(index).setLit(isLit);
+    }
+
+    public void initLit(){
+        for (WeekItem item:lit) {
+            if(item.isLit()) {
+                manager.findViewByPosition(lit.indexOf(item)).setBackgroundColor(0xffe1bee7);
+                //点亮该区域
+            }
+        }
     }
 }

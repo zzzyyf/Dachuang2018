@@ -2,6 +2,7 @@ package com.example.zyf.timetable;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
@@ -81,6 +82,26 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
                     ((TextView) popupWindows.get(pos).getContentView().findViewById(R.id.table_menu_title)).setText(classList.get(pos).getClass_name());
                     if(classList.get(pos).getClass_name()!=null&&!classList.get(pos).getClass_name().equals("空课")) {
                         ((TextView) popupWindows.get(pos).getContentView().findViewById(R.id.table_menu_content)).setText(DateHelper.weeksToString(classList.get(pos).getWeeks()));
+                        popupWindows.get(pos).getContentView().findViewById(R.id.table_menu_title).setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Intent intent = new Intent(context, AddClassActivity.class);
+                                intent.putExtra("ClassItem", classList.get(pos));
+                                intent.putExtra("OperationType", 5);//10==ADD_SUBJECT, 5==EDIT_SUBJECT
+                                ((Activity)context).startActivityForResult(intent, 1);
+                            }
+                        });
+                    }else if(classList.get(pos).getClass_name().equals("空课")){
+                        ((TextView) popupWindows.get(pos).getContentView().findViewById(R.id.table_menu_title)).setText("添加课程");
+                        popupWindows.get(pos).getContentView().findViewById(R.id.table_menu_title).setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Intent intent = new Intent(context, AddClassActivity.class);
+                                intent.putExtra("ClassItem", classList.get(pos));
+                                intent.putExtra("OperationType", 10);//10==ADD_SUBJECT, 5==EDIT_SUBJECT
+                                ((Activity)context).startActivityForResult(intent, 1);
+                            }
+                        });
                     }
                     popupWindows.get(pos).showAsDropDown(viewHolder.itemView);
                 }else{
