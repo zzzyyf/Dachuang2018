@@ -103,7 +103,7 @@ public class AddClassActivity extends AppCompatActivity {
 
         //接收编辑/从空课新建课程的有关数据
         intent = getIntent();
-        if(intent!=null){
+        if(intent != null){
             item = (Subject) intent.getSerializableExtra("ClassItem");
             if(intent.getIntExtra("OperationType", 10)==5) {//10==ADD_SUBJECT, 5==EDIT_SUBJECT
                 nameText.setText(item.getClass_name());

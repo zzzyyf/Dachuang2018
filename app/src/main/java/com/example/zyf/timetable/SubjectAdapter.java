@@ -10,7 +10,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
+import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
@@ -18,6 +18,7 @@ import com.example.zyf.timetable.db.Subject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHolder> {
     Context context;
@@ -42,7 +43,7 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
     //TODO: 宽度需动态改变才能居中，居中只能在设置文本之后，设置宽度后文本刷新会有跳动或闪动，怎么解决？
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder viewHolder, int i) {
-        pos = viewHolder.getAdapterPosition();
+
         viewHolder.className.setVisibility(View.INVISIBLE);
         viewHolder.classPlace.setVisibility(View.INVISIBLE);
         viewHolder.className.setText(classList.get(i).getClass_name());
@@ -56,7 +57,7 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
                 viewHolder.classPlace.setVisibility(View.VISIBLE);
             }
         });
-
+        pos = viewHolder.getAdapterPosition();
         popupWindows.add(pos, new PopupWindow(LayoutInflater.from(context).inflate(R.layout.timetable_menu,
                 (ViewGroup) ((Activity) context).findViewById(android.R.id.content), false), ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         popupWindows.get(pos).setBackgroundDrawable(context.getDrawable(R.drawable.table_menu_bg));
@@ -67,19 +68,24 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
         popupWindows.get(pos).setTouchable(true);
 
         int span = classList.get(i).getEndPeriod() - classList.get(i).getStartPeriod() + 1;
-        LayoutParams params = viewHolder.itemView.getLayoutParams();
+        MarginLayoutParams params = (MarginLayoutParams) viewHolder.itemView.getLayoutParams();
         params.height = dp2px(80) * span;
+        if(classList.get(i).getClass_name()!=null) {
+            params.setMargins(dp2px(1), dp2px(1), dp2px(1), dp2px(1));
+            setColorRandom(viewHolder.itemView, false);
+        }else setColorRandom(viewHolder.itemView, true);
         viewHolder.itemView.setLayoutParams(params);
         viewHolder.itemView.setElevation(dp2px(1));
+
         viewHolder.itemView.setFocusableInTouchMode(true);
         viewHolder.itemView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus){
                     viewHolder.itemView.setElevation(dp2px(8));
-                    pos = viewHolder.getAdapterPosition();
+                    pos = viewHolder.getAdapterPosition(); //不能省略
                     ((TextView) popupWindows.get(pos).getContentView().findViewById(R.id.table_menu_title)).setText(classList.get(pos).getClass_name());
-                    if(classList.get(pos).getClass_name()!=null&&!classList.get(pos).getClass_name().equals("空课")) {
+                    if(classList.get(pos).getClass_name()!=null && !classList.get(pos).getClass_name().equals("空课")) {
                         ((TextView) popupWindows.get(pos).getContentView().findViewById(R.id.table_menu_content)).setText(DateHelper.weeksToString(classList.get(pos).getWeeks()));
                         popupWindows.get(pos).getContentView().findViewById(R.id.table_menu_title).setOnClickListener(new View.OnClickListener() {
                             @Override
@@ -142,4 +148,28 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
         }
     }
 
+    public void setColorRandom(View item, boolean isEmpt){
+        if(isEmpt) item.setBackgroundColor(0xffefebe9);
+        else{
+            Random random = new Random();
+            int num = random.nextInt(5)+1;
+            switch (num){
+                case 1:
+                    item.setBackgroundColor(0xeeffccbc);
+                    break;
+                case 2:
+                    item.setBackgroundColor(0xf3c8e6c9);
+                    break;
+                case 3:
+                    item.setBackgroundColor(0xf8b3e5fc);
+                    break;
+                case 4:
+                    item.setBackgroundColor(0xfcd7ccc8);
+                    break;
+                case 5:
+                    item.setBackgroundColor(0xffc5cae9);
+                    break;
+            }
+        }
+    }
 }
