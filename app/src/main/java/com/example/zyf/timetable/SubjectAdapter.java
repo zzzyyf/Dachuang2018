@@ -25,7 +25,7 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
     List<PopupWindow> popupWindows;
     int pos,a;
     private List<Subject> classList;
-    //TODO: 为每个格子随机选取给定的颜色
+    //TODO: 为每节课设置固定的颜色
     public SubjectAdapter(Context context, List<Subject> classList) {
         this.context = context;
         this.classList = classList;
@@ -70,7 +70,7 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
         int span = classList.get(i).getEndPeriod() - classList.get(i).getStartPeriod() + 1;
         MarginLayoutParams params = (MarginLayoutParams) viewHolder.itemView.getLayoutParams();
         params.height = dp2px(80) * span;
-        if(classList.get(i).getClass_name()!=null) {
+        if(classList.get(i).getClass_name()!=null && !classList.get(i).getClass_name().equals("空课")) {
             params.setMargins(dp2px(1), dp2px(1), dp2px(1), dp2px(1));
             setColorRandom(viewHolder.itemView, false);
         }else setColorRandom(viewHolder.itemView, true);

@@ -258,9 +258,8 @@ public class MainActivity extends AppCompatActivity {
                     }
                     //只需部分更新即可
                     int weekday = data.getIntExtra("weekday", 1);
-                    if (LitePal.findLast(Subject.class).getWeeks().contains(getSelectedWeek())) {
-                        ((TimeTableFragment) fragment).partialUpdateTableList(weekday);
-                    }
+                    ((TimeTableFragment) fragment).partialUpdateTableList(weekday);
+
                 }
                 break;
             case SET_SEMESTER:
