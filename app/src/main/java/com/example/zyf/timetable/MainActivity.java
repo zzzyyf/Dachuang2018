@@ -3,10 +3,10 @@ package com.example.zyf.timetable;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -77,6 +77,10 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case PLAN_FRAGMENT:
                 //TODO: PlanFragment unfinished
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.container, new PlanFragment(), "Plan")
+                        .commit();
+                break;
             default:
         }
 
@@ -112,7 +116,12 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case PLAN_FRAGMENT:
                         //选择“计划”
+                        fragment = new PlanFragment();
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.container, fragment, "Plan")
+                                .commit();
                         invalidateOptionsMenu();
+                        break;
                     case EVENT_FRAGMENT:
                         //选择“事件”
                         fragment = new EventFragment();
@@ -159,7 +168,10 @@ public class MainActivity extends AppCompatActivity {
                         .commit();
                 break;
             case PLAN_FRAGMENT:
-                //
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.container, new PlanFragment(), "Plan")
+                        .commit();
+                break;
             default:
         }
     }

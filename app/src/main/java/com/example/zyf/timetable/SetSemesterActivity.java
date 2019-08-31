@@ -1,7 +1,7 @@
 package com.example.zyf.timetable;
 
-import android.support.design.widget.TextInputLayout;
-import android.support.v7.app.AppCompatActivity;
+import com.google.android.material.textfield.TextInputLayout;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
@@ -37,6 +37,7 @@ public class SetSemesterActivity extends AppCompatActivity implements DatePicker
         saveBtn = findViewById(R.id.save_btn);
         closeBtn = findViewById(R.id.close_btn);
         startDateText.getEditText().setText(String.format("%d-%d-%d", startYear, startMonth, startDay));
+        startDate = new LocalDate(startYear, startMonth, startDay);
         startDateText.getEditText().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -49,6 +50,7 @@ public class SetSemesterActivity extends AppCompatActivity implements DatePicker
             }
         });
         endDateText.getEditText().setText(String.format("%d-%d-%d", endYear, endMonth, endDay));
+        endDate= new LocalDate(endYear, endMonth, endDay);
         endDateText.getEditText().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -3,7 +3,8 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
-        <item name="android:textColor">@color/darkslategrey</item>
+        <item name="android:textColor">@color/md_black</item>
+        <!-- <item name="android:windowBackground">@drawable/bg</item> -->
     </style>
 
     <style name="FullScreenDialogTheme" parent="Base.Theme.AppCompat.Light.Dialog">

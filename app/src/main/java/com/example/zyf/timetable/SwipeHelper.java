@@ -3,12 +3,11 @@ package com.example.zyf.timetable;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Rect;
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 import java.util.ArrayList;
-import java.util.List;
 
 public class SwipeHelper implements View.OnTouchListener {
     ArrayList<WeekItem> lit;//0=未点亮的，1=已点亮的
@@ -19,7 +18,7 @@ public class SwipeHelper implements View.OnTouchListener {
     boolean isItemMeasured=false;
     boolean inTouchArea=false;
     boolean isMultiple;
-    int isSelected = -1;
+    int selected = -1;
     RecyclerView.LayoutManager manager;
     Context context;
 
@@ -87,7 +86,7 @@ public class SwipeHelper implements View.OnTouchListener {
                                 litAnim.setDuration(200)
                                         .start();//点亮该区域
                                 lit.get(i).setLit(true);//标示该周被选中
-                                isSelected=i;
+                                selected =i;
 
                                 dimOthers(i);
                                 inTouchArea = true;//设置已进入区域
@@ -102,7 +101,7 @@ public class SwipeHelper implements View.OnTouchListener {
             case MotionEvent.ACTION_UP:
                 //若已抬起则肯定不在区域内
                 inTouchArea=false;
-                //if(!isMultiple)dimOthers(isSelected);
+                //if(!isMultiple)dimOthers(selected);
                 return true;
             default:
         }

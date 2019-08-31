@@ -3,10 +3,9 @@ package com.example.zyf.timetable;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -149,7 +148,7 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
     }
 
     public void setColorRandom(View item, boolean isEmpt){
-        if(isEmpt) item.setBackgroundColor(0xffefebe9);
+        if(isEmpt) item.setBackgroundColor(0xeeede7f6);
         else{
             Random random = new Random();
             int num = random.nextInt(5)+1;

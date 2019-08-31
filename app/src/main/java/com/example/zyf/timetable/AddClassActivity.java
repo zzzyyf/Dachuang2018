@@ -4,13 +4,13 @@ import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,7 +20,6 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.MultiAutoCompleteTextView;
-import android.widget.PopupWindow;
 import android.widget.Toast;
 
 import com.example.zyf.timetable.db.Subject;
@@ -80,7 +79,7 @@ public class AddClassActivity extends AppCompatActivity {
         initWeekdays();
         initSessions();
         final LinearLayoutManager weekdaysManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
-        GridLayoutManager sessionsManager = new GridLayoutManager(this, 4, LinearLayoutManager.VERTICAL, false);
+        GridLayoutManager sessionsManager = new GridLayoutManager(this, 4, RecyclerView.VERTICAL, false);
         weekdayPicker.setLayoutManager(weekdaysManager);
         //TODO: 按照早、午、晚的课节排列
         sessionPicker.setLayoutManager(sessionsManager);
@@ -118,7 +117,7 @@ public class AddClassActivity extends AppCompatActivity {
                 //此时不是从头开始新建课程
                 //设置weekday的初始值
                 weekdayHelper.setLit(item.getWeekday() - 1, true);
-                weekdayHelper.isSelected=item.getWeekday()-1;
+                weekdayHelper.selected =item.getWeekday()-1;
                 //设置period的初始值
                 for (int i = item.getStartPeriod(); i <= item.getEndPeriod(); i++) {
                     sessionHelper.setLit(i - 1, true);
@@ -281,7 +280,7 @@ public class AddClassActivity extends AppCompatActivity {
             for (Subject subject:subjectList){
                 //若没有完全错开则必有重合
                 if (intent.getIntExtra("OperationType", 10)!=5)
-                    if (!(subject.getEndPeriod()<periods.get(0)||subject.getStartPeriod()>periods.get(periods.size()-1))){
+                    if (!(subject.getEndPeriod()<periods.get(0)||subject.getStartPeriod()>periods.get(periods.size()-1)) && checkWeekOverLap(subject, litWeeksList)){
                         Toast.makeText(AddClassActivity.this, "该节课程的时间与 "+subject.getClass_name()+" 冲突了哦，请检查~", Toast.LENGTH_SHORT).show();
                         return PERIOD_LAGGED;
                     }
@@ -316,11 +315,11 @@ public class AddClassActivity extends AppCompatActivity {
                 } else if (weekText.getText().toString().equals("")) {
                     Toast.makeText(AddClassActivity.this, "你还没有选择上课周哦~", Toast.LENGTH_SHORT).show();
                     break;
-                } else if (weekdayHelper.isSelected == -1) {
+                } else if (weekdayHelper.selected == -1) {
                     Toast.makeText(AddClassActivity.this, "你还没有选择上课日哦~", Toast.LENGTH_SHORT).show();
                     break;
                     //weekday+1
-                } else if (checkWeekItems(sessions, weekdayHelper.isSelected+1)!=PERIOD_OK) {
+                } else if (checkWeekItems(sessions, weekdayHelper.selected +1)!=PERIOD_OK) {
                     break;
                 }
 
@@ -334,7 +333,7 @@ public class AddClassActivity extends AppCompatActivity {
                 for (int i = 0; i < litWeeksList.size(); i++)
                     if (litWeeksList.get(i) != 0) selectedWeeks.add(i + 1);
                 subject.setWeeks(selectedWeeks);
-                subject.setWeekday(weekdayHelper.isSelected+1);
+                subject.setWeekday(weekdayHelper.selected +1);
                 subject.setStartPeriod(periods.get(0));
                 subject.setEndPeriod(periods.get(periods.size()-1));
                 try {
@@ -345,7 +344,7 @@ public class AddClassActivity extends AppCompatActivity {
                 }
 
                 Intent intent = new Intent();
-                intent.putExtra("weekday", weekdayHelper.isSelected+1);
+                intent.putExtra("weekday", weekdayHelper.selected +1);
                 setResult(RESULT_OK, intent);
                 finish();
                 break;
@@ -404,5 +403,12 @@ public class AddClassActivity extends AppCompatActivity {
         if (builder.toString().equals("已选择："))
             weekText.setText("");
         else weekText.setText(builder.toString());
+    }
+    private boolean checkWeekOverLap(Subject subject, List<Integer> weekList){
+        for(int week: subject.getWeeks()){
+            if(weekList.get(week-1) ==1)
+                return true;
+        }
+        return false;
     }
 }
